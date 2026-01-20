@@ -18,6 +18,15 @@ provider "aws" {
 
 module "vpc" {
   source = "./vpc"
+
+  project           = var.project
+  vpc_cidr          = var.vpc_cidr
+  public_subnet_a   = var.public_subnet_a
+  public_subnet_b   = var.public_subnet_b
+  private_subnet_a  = var.private_subnet_a
+  private_subnet_b  = var.private_subnet_b
+  az_a              = var.az_a
+  az_b              = var.az_b
 }
 
 module "rds" {
