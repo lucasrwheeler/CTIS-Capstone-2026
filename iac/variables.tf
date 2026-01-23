@@ -37,3 +37,13 @@ variable "az_b" {
   type = string
   default = "us-east-1b"
 }
+
+variable "db_username" {
+  type    = string
+  default = "postgres"
+}
+
+variable "db_password" {
+  type    = string
+  default = "ChangeThisPassword123!"
+}

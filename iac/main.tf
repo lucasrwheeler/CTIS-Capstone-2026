@@ -29,8 +29,17 @@ module "vpc" {
   az_b              = var.az_b
 }
 
+
 module "rds" {
   source = "./rds"
+
+  project          = var.project
+  vpc_id           = module.vpc.vpc_id
+  private_subnets  = module.vpc.private_subnets
+  lambda_cidr_blocks = ["10.0.0.0/16"]
+
+  db_username = var.db_username
+  db_password = var.db_password
 }
 
 module "lambda" {
