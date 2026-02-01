@@ -1,0 +1,18 @@
+[
+  { "course_id": "CTIS 310", "prereq": "CTIS 210" },
+  { "course_id": "CTIS 320", "prereq": "CTIS 221" },
+  { "course_id": "CTIS 320", "prereq": "CTIS 210" },
+  { "course_id": "CTIS 321", "prereq": "CTIS 210" },
+  { "course_id": "CTIS 321", "prereq": "CTIS 221" },
+  { "course_id": "CTIS 322", "prereq": "CTIS 321" },
+  { "course_id": "CTIS 342", "prereq": "CTIS 210" },
+  { "course_id": "CTIS 342", "prereq": "CTIS 243" },
+  { "course_id": "CTIS 345", "prereq": "CTIS 210" },
+  { "course_id": "CTIS 345", "prereq": "CTIS 243" },
+  { "course_id": "CTIS 370", "prereq": "CTIS 221" },
+  { "course_id": "CTIS 371", "prereq": "CTIS 221" },
+  { "course_id": "CTIS 440", "prereq": "CTIS 321" },
+  { "course_id": "CTIS 440", "prereq": "CTIS 310" },
+  { "course_id": "CTIS 440", "prereq": "CTIS 342" },
+  { "course_id": "CTIS 471", "prereq": "CTIS 370" }
+]

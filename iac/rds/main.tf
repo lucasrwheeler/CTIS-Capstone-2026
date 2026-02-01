@@ -34,7 +34,7 @@ resource "aws_security_group" "rds_sg" {
 resource "aws_db_instance" "postgres" {
   identifier              = "${var.project}-postgres"
   engine                  = "postgres"
-  engine_version          = "15.3"
+  engine_version          = "15"
   instance_class          = "db.t3.micro"
   allocated_storage       = 20
   db_subnet_group_name    = aws_db_subnet_group.rds_subnets.name
