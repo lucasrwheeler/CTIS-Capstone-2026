@@ -3,13 +3,13 @@ from db.connection import get_connection
 GET_REQUIRED = """
     SELECT course_id
     FROM degree_requirements
-    WHERE major = %s AND requirement_type = 'required';
+    WHERE degree = %s AND requirement_type = 'required';
 """
 
 GET_ELECTIVES = """
     SELECT course_id
     FROM degree_requirements
-    WHERE major = %s AND requirement_type = 'elective';
+    WHERE degree = %s AND requirement_type = 'elective';
 """
 
 def get_remaining_requirements(major: str, completed: list[str]):
@@ -41,3 +41,48 @@ def get_remaining_requirements(major: str, completed: list[str]):
         "remaining_required": remaining_required,
         "remaining_electives": remaining_electives
     }
+
+
+from queries import get_courses_for_degree
+
+def calculate_distinct_courses(degree_a: str, degree_b: str):
+    # Fetch required courses for each degree
+    req_a = get_courses_for_degree(degree_a)
+    req_b = get_courses_for_degree(degree_b)
+
+    # Dictionary to collapse duplicates
+    distinct = {}
+
+    # Add courses from degree A
+    for row in req_a:
+        distinct[row["course_id"]] = row["credits"]
+
+    # Add courses from degree B
+    for row in req_b:
+        distinct[row["course_id"]] = row["credits"]
+
+    # Sum distinct credits
+    total_credits = sum(distinct.values())
+
+    return {
+        "degree_a": degree_a,
+        "degree_b": degree_b,
+        "distinct_courses": list(distinct.keys()),
+        "distinct_credits": total_credits
+    }
+
+def evaluate_degree_combo(degree_a: str, degree_b: str):
+    result = calculate_distinct_courses(degree_a, degree_b)
+    total = result["distinct_credits"]
+
+    # Determine threshold
+    if "MINOR" in degree_a or "MINOR" in degree_b:
+        threshold = 48  # major + minor
+    else:
+        threshold = 64  # double major
+
+    result["required_distinct_credits"] = threshold
+    result["meets_requirement"] = total >= threshold
+    result["credits_short"] = max(0, threshold - total)
+
+    return result
