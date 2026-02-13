@@ -1,6 +1,6 @@
 from backend.db.connection import get_connection
 
-def get_eligible_courses(completed):
+def check_eligibility(completed):
     conn = get_connection()
     cur = conn.cursor()
 
