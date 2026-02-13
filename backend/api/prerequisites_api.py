@@ -1,5 +1,7 @@
+# backend/api/prerequisites_api.py
+
 from fastapi import APIRouter
-from backend.services.prerequisites_service import get_prerequisites
+from backend.services.prerequisites import get_prerequisites
 
 router = APIRouter(prefix="/prerequisites", tags=["Prerequisites"])
 
