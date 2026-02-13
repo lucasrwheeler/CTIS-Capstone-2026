@@ -1,13 +1,13 @@
 # backend/services/prerequisites.py
 
-from backend.db.connection import get_db_connection
+from backend.db.connection import get_connection
 from backend.queries import GET_PREREQUISITES
 
 def get_prerequisites(course_id: str):
     """
     Returns a list of prerequisite course IDs for the given course.
     """
-    conn = get_db_connection()
+    conn = get_connection()
     cur = conn.cursor()
     cur.execute(GET_PREREQUISITES, (course_id,))
     rows = cur.fetchall()
