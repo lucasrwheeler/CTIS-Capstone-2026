@@ -10,7 +10,7 @@ WHERE degree = %s;
 """
 
 GET_PREREQUISITES = """
-SELECT prereq_course_id
+SELECT prereq
 FROM prerequisites
 WHERE course_id = %s;
 """
