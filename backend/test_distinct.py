@@ -1,4 +1,4 @@
-from requirements_service import calculate_distinct_courses, evaluate_degree_combo
+from backend.services.requirements_service import calculate_distinct_courses, evaluate_degree_combo
 
 # Test 1: CNS + CTIS_MINOR
 print("=== CNS + CTIS_MINOR ===")
@@ -14,3 +14,8 @@ print(evaluate_degree_combo("CTIS", "CNS"))
 print("\n=== CTIS + CTIS_MINOR ===")
 print(calculate_distinct_courses("CTIS", "CTIS_MINOR"))
 print(evaluate_degree_combo("CTIS", "CTIS_MINOR"))
+
+# Test 4: CNS + CNS_Minor
+print("=== CNS + CNS_MINOR ===")
+print(calculate_distinct_courses("CNS", "CNS_MINOR"))
+print(evaluate_degree_combo("CNS", "CNS_MINOR"))

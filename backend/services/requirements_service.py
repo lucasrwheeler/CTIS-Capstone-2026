@@ -1,4 +1,4 @@
-from db.connection import get_connection
+from backend.queries import get_courses_for_degree
 
 GET_REQUIRED = """
     SELECT course_id
@@ -43,7 +43,6 @@ def get_remaining_requirements(major: str, completed: list[str]):
     }
 
 
-from queries import get_courses_for_degree
 
 def calculate_distinct_courses(degree_a: str, degree_b: str):
     # Fetch required courses for each degree

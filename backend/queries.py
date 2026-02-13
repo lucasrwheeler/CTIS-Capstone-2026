@@ -15,11 +15,23 @@ SELECT course_id
 FROM courses;
 """
 
+from backend.db.connection import get_connection
+
+GET_COURSES_FOR_DEGREE = """
+SELECT dr.course_id, c.credits
+FROM degree_requirements dr
+JOIN courses c ON dr.course_id = c.course_id
+WHERE dr.degree = %s;
+"""
+
 def get_courses_for_degree(degree: str):
-    sql = """
-        SELECT dr.course_id, c.credits::int AS credits
-        FROM degree_requirements dr
-        JOIN courses c ON dr.course_id = c.course_id
-        WHERE dr.degree = %s;
-    """
-    return db.query(sql, (degree,))
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(GET_COURSES_FOR_DEGREE, (degree,))
+    rows = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return [{"course_id": r[0], "credits": int(r[1])} for r in rows]
