@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.requirements_api import router as requirements_router
-from api.eligibility_api import router as eligibility_router
-from api.prerequisites_api import router as prerequisites_router
+from backend.api.requirements_api import router as requirements_router
+from backend.api.eligibility_api import router as eligibility_router
+from backend.api.prerequisites_api import router as prerequisites_router
 
 app = FastAPI(
     title="Guilford Academic Planner API",
