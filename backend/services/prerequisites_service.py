@@ -1,5 +1,5 @@
 from backend.db.connection import get_connection
-from queries import GET_PREREQS
+from backend.queries import GET_PREREQS
 
 def get_prerequisites(course_id: str):
     conn = get_connection()
