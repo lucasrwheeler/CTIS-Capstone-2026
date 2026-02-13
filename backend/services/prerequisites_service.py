@@ -1,4 +1,4 @@
-from db.connection import get_connection
+from backend.db.connection import get_connection
 from db.queries import GET_PREREQS
 
 def get_prerequisites(course_id: str):

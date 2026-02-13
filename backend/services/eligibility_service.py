@@ -1,4 +1,4 @@
-from db.connection import get_connection
+from backend.db.connection import get_connection
 
 def get_eligible_courses(completed):
     conn = get_connection()

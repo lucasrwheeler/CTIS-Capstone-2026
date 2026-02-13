@@ -1,18 +1,27 @@
-from backend.queries import get_courses_for_degree
+# backend/services/requirements_service.py
 
+from backend.queries import get_courses_for_degree
+from backend.db.connection import get_connection
+
+# SQL for requirement breakdown (will eventually move to queries.py)
 GET_REQUIRED = """
-    SELECT course_id
-    FROM degree_requirements
-    WHERE degree = %s AND requirement_type = 'required';
+SELECT course_id
+FROM degree_requirements
+WHERE degree = %s AND requirement_type = 'required';
 """
 
 GET_ELECTIVES = """
-    SELECT course_id
-    FROM degree_requirements
-    WHERE degree = %s AND requirement_type = 'elective';
+SELECT course_id
+FROM degree_requirements
+WHERE degree = %s AND requirement_type = 'elective';
 """
 
+
 def get_remaining_requirements(major: str, completed: list[str]):
+    """
+    Returns remaining required and elective courses for a major
+    based on the student's completed courses.
+    """
     conn = get_connection()
     cur = conn.cursor()
 
@@ -27,7 +36,7 @@ def get_remaining_requirements(major: str, completed: list[str]):
     cur.close()
     conn.close()
 
-    # If major doesn't exist in DB
+    # Major not found
     if not required_rows and not elective_rows:
         return {
             "remaining_required": [],
@@ -43,24 +52,23 @@ def get_remaining_requirements(major: str, completed: list[str]):
     }
 
 
-
 def calculate_distinct_courses(degree_a: str, degree_b: str):
-    # Fetch required courses for each degree
+    """
+    Returns distinct courses and total distinct credits
+    for a combination of two degrees.
+    """
     req_a = get_courses_for_degree(degree_a)
     req_b = get_courses_for_degree(degree_b)
 
-    # Dictionary to collapse duplicates
+    # Collapse duplicates
     distinct = {}
 
-    # Add courses from degree A
     for row in req_a:
         distinct[row["course_id"]] = row["credits"]
 
-    # Add courses from degree B
     for row in req_b:
         distinct[row["course_id"]] = row["credits"]
 
-    # Sum distinct credits
     total_credits = sum(distinct.values())
 
     return {
@@ -70,15 +78,20 @@ def calculate_distinct_courses(degree_a: str, degree_b: str):
         "distinct_credits": total_credits
     }
 
+
 def evaluate_degree_combo(degree_a: str, degree_b: str):
+    """
+    Applies threshold logic (48 for major+minor, 64 for double major)
+    and returns whether the combination meets requirements.
+    """
     result = calculate_distinct_courses(degree_a, degree_b)
     total = result["distinct_credits"]
 
     # Determine threshold
     if "MINOR" in degree_a or "MINOR" in degree_b:
-        threshold = 48  # major + minor
+        threshold = 48
     else:
-        threshold = 64  # double major
+        threshold = 64
 
     result["required_distinct_credits"] = threshold
     result["meets_requirement"] = total >= threshold
