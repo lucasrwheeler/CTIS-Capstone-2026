@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from services.eligibility_service import get_eligible_courses
+from backend.services.eligibility_service import check_eligibility
 
 router = APIRouter(prefix="/eligible", tags=["Eligibility"])
 

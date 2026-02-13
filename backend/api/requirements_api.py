@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from services.requirements_service import get_remaining_requirements
+from backend.services.requirements_service import get_remaining_requirements
 
 router = APIRouter(prefix="/requirements", tags=["Requirements"])
 
