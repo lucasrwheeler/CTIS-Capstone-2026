@@ -1,3 +1,8 @@
+# backend/queries.py
+
+from backend.db.connection import get_connection
+
+# SQL queries
 GET_REQUIREMENTS = """
 SELECT requirement_type, course_id
 FROM degree_requirements
@@ -15,8 +20,6 @@ SELECT course_id
 FROM courses;
 """
 
-from backend.db.connection import get_connection
-
 GET_COURSES_FOR_DEGREE = """
 SELECT dr.course_id, c.credits
 FROM degree_requirements dr
@@ -25,6 +28,13 @@ WHERE dr.degree = %s;
 """
 
 def get_courses_for_degree(degree: str):
+    """
+    Returns a list of dicts:
+    [
+        {"course_id": "CTIS 210", "credits": 4},
+        ...
+    ]
+    """
     conn = get_connection()
     cur = conn.cursor()
 
