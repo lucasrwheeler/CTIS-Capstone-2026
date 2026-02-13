@@ -3,6 +3,6 @@ from backend.services.prerequisites_service import get_prerequisites
 
 router = APIRouter(prefix="/prerequisites", tags=["Prerequisites"])
 
-@router.get("/{course_id:path}")
-def prereqs(course_id: str):
+@router.get("/{course_id}")
+def prerequisites_endpoint(course_id: str):
     return get_prerequisites(course_id)
