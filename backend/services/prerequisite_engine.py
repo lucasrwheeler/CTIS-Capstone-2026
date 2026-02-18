@@ -1,6 +1,6 @@
 # backend/services/prerequisite_engine.py
 
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Optional
 from backend.services.prerequisites import get_prerequisites
 
 
@@ -26,8 +26,7 @@ def get_direct_prereqs(course_id: str) -> List[str]:
     """
     return get_prerequisites(course_id)
 
-
-def expand_prereq_chain(course_id: str, visited: Set[str] | None = None) -> Set[str]:
+def expand_prereq_chain(course_id: str, visited: Optional[Set[str]] = None) -> Set[str]:
     """
     Recursively expand all prerequisites for a course, following chains.
 
