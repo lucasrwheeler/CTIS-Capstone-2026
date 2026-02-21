@@ -9,6 +9,9 @@ from backend.services.eligibility_service import check_eligibility
 # New Day 9 engine
 from backend.services.prerequisite_engine import evaluate_eligibility
 
+# New Day 10 engine
+from backend.services.explanation_engine import build_explanation
+
 router = APIRouter(prefix="/eligibility", tags=["Eligibility"])
 
 
@@ -25,7 +28,7 @@ def eligibility_endpoint(completed: List[str] = Query([])):
 
 
 # -----------------------------
-# NEW DAY 9 ENDPOINT
+# NEW DAY 9 + DAY 10 ENDPOINT
 # -----------------------------
 @router.get("/{course_id}")
 def eligibility_for_course(
@@ -36,4 +39,14 @@ def eligibility_for_course(
     New endpoint:
     GET /eligibility/CTIS%20440?completed=CTIS%20321&completed=CTIS%20342
     """
-    return evaluate_eligibility(course_id, completed)
+
+    # Day 9 logic
+    result = evaluate_eligibility(course_id, completed)
+
+    # Day 10 explanation
+    explanation = build_explanation(result)
+
+    return {
+        "eligibility": result,
+        "explanation": explanation
+    }
