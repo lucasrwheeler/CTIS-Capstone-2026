@@ -13,3 +13,4 @@ nav:
   - Open Questions: open-questions.md
   - Database Schema: database.md
   - Data Import Summary: data-import.md
+  - Backend Architecture: backend-architecture.md

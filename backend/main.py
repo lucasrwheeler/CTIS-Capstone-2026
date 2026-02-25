@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from backend.api.requirements_api import router as requirements_router
 from backend.api.eligibility_api import router as eligibility_router
 from backend.api.prerequisites_api import router as prerequisites_router
+from backend.api.next_courses import router as next_courses_router
+
+
 
 app = FastAPI(
     title="Guilford Academic Planner API",
@@ -23,6 +26,7 @@ app.add_middleware(
 app.include_router(requirements_router)
 app.include_router(eligibility_router)
 app.include_router(prerequisites_router)
+app.include_router(next_courses_router)
 
 @app.get("/")
 def root():
