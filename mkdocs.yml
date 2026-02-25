@@ -1,0 +1,15 @@
+site_name: CTIS 440 Capstone – Academic Planner
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Project Overview: overview.md
+  - System Scope: scope.md
+  - Architecture: architecture.md
+  - Setup & Usage: setup.md
+  - Risks & Ethics: risks.md
+  - Daily Log: daily-log.md
+  - Open Questions: open-questions.md
+  - Database Schema: database.md
+  - Data Import Summary: data-import.md
