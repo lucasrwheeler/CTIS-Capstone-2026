@@ -5,6 +5,7 @@ from backend.api.requirements_api import router as requirements_router
 from backend.api.eligibility_api import router as eligibility_router
 from backend.api.prerequisites_api import router as prerequisites_router
 from backend.api.next_courses import router as next_courses_router
+from backend.api.degree_audit_engine import router as degree_audit_router
 
 
 
@@ -27,6 +28,7 @@ app.include_router(requirements_router)
 app.include_router(eligibility_router)
 app.include_router(prerequisites_router)
 app.include_router(next_courses_router)
+app.include_router(degree_audit_router)
 
 @app.get("/")
 def root():
