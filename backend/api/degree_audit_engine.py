@@ -4,7 +4,9 @@ from typing import List, Dict, Any
 
 from backend.services.major_minor_engine.degree_audit_engine import (
     run_ctis_degree_audit,
-    run_cns_degree_audit
+    run_cns_degree_audit,
+    run_ctis_minor_degree_audit,
+    run_cns_minor_degree_audit
 )
 
 router = APIRouter()
