@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
-from degree_audit_engine import run_ctis_degree_audit
+from backend.services.major_minor_engine.degree_audit_engine import run_ctis_degree_audit
 
 router = APIRouter()
 
