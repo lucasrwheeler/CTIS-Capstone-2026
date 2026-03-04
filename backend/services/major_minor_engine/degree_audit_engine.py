@@ -245,3 +245,154 @@ def run_cns_degree_audit(completed: List[str]) -> Dict[str, Any]:
             f"{CNS_TOTAL_COURSES_REQUIRED} required courses for the CNS major."
         ),
     }
+
+
+
+# -----------------------------
+# CTIS MINOR REQUIREMENTS
+# -----------------------------
+
+CTIS_MINOR_CORE = ["CTIS 243", "CTIS 210"]
+
+CTIS_MINOR_ELECTIVES = [
+    "CTIS 230",
+    "CTIS 310",
+    "CTIS 321",
+    "CTIS 322",
+    "CTIS 331",
+    "CTIS 342",
+    "CTIS 345",
+]
+
+def ctis_minor_electives_completed(completed: List[str]) -> List[str]:
+    return [c for c in completed if c in CTIS_MINOR_ELECTIVES]
+
+def run_ctis_minor_degree_audit(completed: List[str]) -> Dict[str, Any]:
+    completed_set = set(completed)
+
+    # Core
+    completed_core = [c for c in CTIS_MINOR_CORE if c in completed_set]
+    remaining_core = [c for c in CTIS_MINOR_CORE if c not in completed_set]
+
+    # Electives
+    completed_electives = ctis_minor_electives_completed(completed)
+    elective_count = len(completed_electives)
+    elective_ok = elective_count >= 2
+
+    # 300-level rule
+    has_300_level = any(c.startswith("CTIS 3") for c in completed_electives)
+    elective_rule_ok = elective_ok and has_300_level
+
+    remaining_elective_slots = max(0, 2 - elective_count)
+    remaining_elective_options = [] if elective_ok else CTIS_MINOR_ELECTIVES
+
+    # Progress
+    completed_count = len(completed_core) + min(elective_count, 2)
+    progress = min(completed_count / 4, 1.0)
+
+    # Recommended order (catalog order)
+    recommended = []
+    recommended.extend(remaining_core)
+    if not elective_ok:
+        recommended.extend(CTIS_MINOR_ELECTIVES)
+
+    return {
+        "degree": "CTIS Minor",
+        "completed_core": completed_core,
+        "remaining_core": remaining_core,
+        "completed_electives": completed_electives,
+        "elective_slots_required": 2,
+        "elective_slots_filled": elective_count,
+        "elective_satisfied": elective_rule_ok,
+        "remaining_requirements": {
+            "core": remaining_core,
+            "elective_options": remaining_elective_options,
+            "elective_slots_remaining": remaining_elective_slots,
+            "300_level_required": not has_300_level,
+        },
+        "courses_completed_toward_degree": completed_count,
+        "total_courses_required": 4,
+        "progress_percent": progress,
+        "recommended_order": recommended,
+        "notes": (
+            f"You have completed {completed_count} of 4 required courses for the CTIS minor."
+        ),
+    }
+
+
+
+
+# -----------------------------
+# CNS MINOR REQUIREMENTS
+# -----------------------------
+
+CNS_MINOR_CORE = ["CTIS 221", "CTIS 322", "CTIS 371"]
+
+CNS_MINOR_ELECTIVES = [
+    "BUS 402",
+    "CTIS 210",
+    "CTIS 230",
+    "CTIS 243",
+    "CTIS 321",
+    "CTIS 331",
+    "CTIS 342",
+    "CTIS 370",
+    "CTIS 471",
+    "JPS 200",
+    "JPS 333",
+    "JPS 330",
+    "PHIL 241",
+]
+
+def cns_minor_electives_completed(completed: List[str]) -> List[str]:
+    return [c for c in completed if c in CNS_MINOR_ELECTIVES]
+
+def run_cns_minor_degree_audit(completed: List[str]) -> Dict[str, Any]:
+    completed_set = set(completed)
+
+    # Core
+    completed_core = [c for c in CNS_MINOR_CORE if c in completed_set]
+    remaining_core = [c for c in CNS_MINOR_CORE if c not in completed_set]
+
+    # Elective (need 1)
+    completed_electives = cns_minor_electives_completed(completed)
+    elective_count = len(completed_electives)
+    elective_ok = elective_count >= 1
+
+    remaining_elective_options = [] if elective_ok else CNS_MINOR_ELECTIVES
+
+    # Progress
+    completed_count = len(completed_core) + min(elective_count, 1)
+    progress = min(completed_count / 4, 1.0)
+
+    # Recommended order (catalog order, CTIS 471 last)
+    recommended = []
+    recommended.extend(remaining_core)
+
+    if not elective_ok:
+        for course in CNS_MINOR_ELECTIVES:
+            if course != "CTIS 471":
+                recommended.append(course)
+        recommended.append("CTIS 471")
+
+    return {
+        "degree": "CNS Minor",
+        "completed_core": completed_core,
+        "remaining_core": remaining_core,
+        "completed_electives": completed_electives,
+        "elective_slots_required": 1,
+        "elective_slots_filled": elective_count,
+        "elective_satisfied": elective_ok,
+        "remaining_requirements": {
+            "core": remaining_core,
+            "elective_options": remaining_elective_options,
+            "elective_slots_remaining": 1 - elective_count,
+        },
+        "courses_completed_toward_degree": completed_count,
+        "total_courses_required": 4,
+        "progress_percent": progress,
+        "recommended_order": recommended,
+        "notes": (
+            f"You have completed {completed_count} of 4 required courses for the CNS minor."
+        ),
+    }

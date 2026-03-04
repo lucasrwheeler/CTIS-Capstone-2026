@@ -19,3 +19,11 @@ def ctis_degree_audit(payload: DegreeAuditRequest):
 @router.post("/degree-audit/cns", response_model=Dict[str, Any])
 def cns_degree_audit(payload: DegreeAuditRequest):
     return run_cns_degree_audit(payload.completed)
+
+@router.post("/degree-audit/ctis-minor", response_model=Dict[str, Any])
+def ctis_minor_degree_audit(payload: DegreeAuditRequest):
+    return run_ctis_minor_degree_audit(payload.completed)
+
+@router.post("/degree-audit/cns-minor", response_model=Dict[str, Any])
+def cns_minor_degree_audit(payload: DegreeAuditRequest):
+    return run_cns_minor_degree_audit(payload.completed)
