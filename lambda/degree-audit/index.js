@@ -1,50 +1,47 @@
-// /lambda/degree-audit/index.js
-
-const { runCtisMajorAudit } = require('./ctisMajor');
-const { runCnsMajorAudit } = require('./cnsMajor');
-const { runCtisMinorAudit } = require('./ctisMinor');
-const { runCnsMinorAudit } = require('./cnsMinor');
+const { getClient } = require('./db');
+const { buildAudit } = require('./auditLogic');
+const { calculateDistinctCreditsSQL } = require('./distinctSQL');
 
 exports.handler = async (event) => {
+  const client = getClient();
+
   try {
+    await client.connect();
+
     const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
 
-    const { program, completed } = body || {};
+    // Distinct credit mode
+    if (body.programA && body.programB) {
+      const result = await calculateDistinctCreditsSQL(
+        client,
+        body.programA,
+        body.programB
+      );
 
-    if (!program || !completed) {
       return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "Missing 'program' or 'completed' fields." })
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*"
+        },
+        body: JSON.stringify(result)
       };
     }
 
-    let result;
+    // Degree audit mode
+    const { degree, completed } = body || {};
 
-    switch (program) {
-      case "CTIS_MAJOR":
-        result = runCtisMajorAudit(completed);
-        break;
-
-      case "CNS_MAJOR":
-        result = runCnsMajorAudit(completed);
-        break;
-
-      case "CTIS_MINOR":
-        result = runCtisMinorAudit(completed);
-        break;
-
-      case "CNS_MINOR":
-        result = runCnsMinorAudit(completed);
-        break;
-
-      default:
-        return {
-          statusCode: 400,
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ error: "Invalid program identifier." })
-        };
+    if (!degree || !completed) {
+      return {
+        statusCode: 400,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          error: "Missing required fields. Provide either {degree, completed} or {programA, programB}."
+        })
+      };
     }
+
+    const audit = await buildAudit(client, degree, completed);
 
     return {
       statusCode: 200,
@@ -52,16 +49,19 @@ exports.handler = async (event) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify(result)
+      body: JSON.stringify(audit)
     };
 
   } catch (err) {
-    console.error("Degree audit Lambda error:", err);
+    console.error("Degree Audit Lambda error:", err);
 
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Internal server error." })
+      body: JSON.stringify({ error: err.message })
     };
+
+  } finally {
+    await client.end();
   }
 };

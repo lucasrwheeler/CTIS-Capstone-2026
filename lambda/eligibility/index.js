@@ -1,13 +1,14 @@
-// /lambda/eligibility/index.js
-
-const { checkEligibility } = require('./prereqs');
-const { getNextCourses } = require('./nextCourses');
+const { getClient } = require('./db');
+const { checkEligibilitySQL } = require('./eligibilitySQL');
 
 exports.handler = async (event) => {
-  try {
-    const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+  const client = getClient();
 
-    const { course_id, completed, upcomingTerm } = body || {};
+  try {
+    await client.connect();
+
+    const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    const { course_id, completed } = body || {};
 
     if (!course_id || !completed) {
       return {
@@ -17,8 +18,7 @@ exports.handler = async (event) => {
       };
     }
 
-    const eligibility = checkEligibility(course_id, completed);
-    const nextCourses = getNextCourses(completed, upcomingTerm || "Fall");
+    const result = await checkEligibilitySQL(client, course_id, completed);
 
     return {
       statusCode: 200,
@@ -26,10 +26,7 @@ exports.handler = async (event) => {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       },
-      body: JSON.stringify({
-        eligibility,
-        next_courses: nextCourses
-      })
+      body: JSON.stringify(result)
     };
 
   } catch (err) {
@@ -38,7 +35,10 @@ exports.handler = async (event) => {
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Internal server error." })
+      body: JSON.stringify({ error: err.message })
     };
+
+  } finally {
+    await client.end();
   }
 };

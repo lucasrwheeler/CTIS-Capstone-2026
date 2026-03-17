@@ -1,53 +1,50 @@
-// /lambda/plan/index.js
-
-const { GRAPH, getAllDependencies } = require('./dependencyGraph');
-const { canTakeInTerm } = require('./semesterLogic');
-const { removeCompleted, sortByDependencyDepth } = require('./utils');
+const { getClient } = require('./db');
+const { checkEligibility } = require('./eligibilitySQL'); 
+const { getSemesterAvailability } = require('./semesterSQL');
+const { getAllCourses } = require('./coursesSQL');
 
 exports.handler = async (event) => {
+  const client = getClient();
+
   try {
+    await client.connect();
+
     const body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
+    const { completed, upcomingTerm } = body;
 
-    const { completed, upcomingTerm } = body || {};
+    const allCourses = await getAllCourses(client);
 
-    if (!completed) {
-      return {
-        statusCode: 400,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ error: "Missing 'completed' field." })
-      };
+    const remaining = allCourses.filter(c => !completed.includes(c));
+
+    const eligible = [];
+    for (const course of remaining) {
+      const canTake = await checkEligibility(client, course, completed);
+      if (canTake) eligible.push(course);
     }
 
-    const term = upcomingTerm || "Fall";
-
-    const allCourses = Object.keys(GRAPH);
-    const remaining = removeCompleted(allCourses, completed);
-
-    const eligibleThisTerm = remaining.filter(c =>
-      canTakeInTerm(c, completed, term)
-    );
-
-    const sorted = sortByDependencyDepth(eligibleThisTerm, getAllDependencies);
+    const filtered = [];
+    for (const course of eligible) {
+      const terms = await getSemesterAvailability(client, course);
+      if (terms.includes(upcomingTerm)) filtered.push(course);
+    }
 
     return {
       statusCode: 200,
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        upcomingTerm: term,
-        recommended_courses: sorted
+        upcomingTerm,
+        recommended_courses: filtered
       })
     };
 
   } catch (err) {
     console.error("Plan Lambda error:", err);
-
     return {
       statusCode: 500,
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ error: "Internal server error." })
+      body: JSON.stringify({ error: err.message })
     };
+  } finally {
+    await client.end();
   }
 };
