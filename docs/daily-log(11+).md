@@ -120,3 +120,127 @@ Outcome
 The backend is now fully cloud‑native.
 EC2 + FastAPI are officially retired.
 Lambda + API Gateway are now the production backend.
+
+## 🟦 Daily Log — Day 15 / Day 16 Progress (Backend Finalization + RDS Integration)
+Date: March 17, 2026
+Author: Lucas Wheeler
+Focus: Completing the SQL‑driven academic intelligence layer, rebuilding the degree‑requirement database, finalizing Lambda logic, and validating the entire backend.
+
+## 1. Rebuilt Degree Requirements Database (Authoritative Catalog Alignment)
+Today I discovered that my earlier degree‑requirement data (both mine and the AI‑generated version) contained inaccuracies compared to the original Python audit engine from the FastAPI prototype.
+To ensure absolute correctness, I rebuilt the entire degree_requirements table using the authoritative source:
+- CTIS Major
+- CNS Major
+- CTIS Minor
+- CNS Minor
+Fix Implemented:
+- Deleted all existing entries for the four programs
+- Reinserted every core, elective, and internship requirement exactly as defined in the Python engine
+- Added missing courses (e.g., ART 245, CTIS 104, CTIS 274, GEOL 340, PHIL 292, XD 220)
+- Ensured capstones (CTIS 440, CTIS 471) were included correctly
+- Verified all minors matched the catalog
+Outcome:
+The database is now 100% accurate, authoritative, and ready for SQL‑driven audits.
+
+## 2. Implemented Program‑Level Rules (Not Stored in DB)
+The Python engine included several rules that are not course‑level data:
+- Elective slot counts
+- Internship requirements
+- Capstone ordering
+- CTIS Minor 300‑level rule
+- Total courses required per program
+Fix Implemented:
+Created a dedicated PROGRAM_RULES.js module containing:
+- CTIS Major: 1 elective, 1 internship, 11 total courses
+- CNS Major: 2 electives, 1 internship, 10 total courses
+- CTIS Minor: 2 electives + 300‑level requirement
+- CNS Minor: 1 elective
+Outcome:
+The SQL audit engine now mirrors the Python logic exactly.
+
+## 3. Built the Final SQL‑Driven Degree Audit Engine (Node.js Lambda)
+I completed the full migration of the degree audit engine from Python → Node.js → SQL.
+Accomplishments:
+- Implemented auditLogic.js
+- Integrated SQL queries for requirements and prerequisites
+- Added program‑level rules
+- Added capstone‑last ordering
+- Added internship logic
+- Added elective slot logic
+- Added CTIS Minor 300‑level rule
+- Added eligibility checks for remaining courses
+- Added progress percentage calculation
+- Added recommended sequencing
+Outcome:
+A fully dynamic, SQL‑powered degree audit engine that matches the original Python behavior 1:1.
+
+## 4. Implemented SQL‑Driven Distinct Credit Engine
+Replaced the old hardcoded distinct‑credit logic with a dynamic SQL version.
+Accomplishments:
+- Created distinctSQL.js
+- Fetched course lists directly from the database
+- Computed shared courses
+- Computed distinct courses
+- Calculated total distinct credits
+- Applied 48‑credit (major+minor) and 64‑credit (major+major) rules
+- Returned clean JSON
+Outcome:
+A fully accurate distinct‑credit calculator that automatically adapts to catalog changes.
+
+## 5. Updated Lambda Handler (index.js) to Support Both Modes
+The degree‑audit Lambda now supports:
+Mode 1 — Degree Audit
+{ "degree": "CTIS_MAJOR", "completed": [...] }
+
+
+Mode 2 — Distinct Credits
+{ "programA": "CTIS_MAJOR", "programB": "CNS_MINOR" }
+
+
+Fix Implemented:
+- Added routing logic
+- Added body parsing
+- Added error handling
+- Added CORS headers
+- Ensured clean JSON responses
+Outcome:
+A single Lambda now handles both academic audit and distinct‑credit analysis.
+
+## 6. Validated All Engines With Real Test Cases
+I ran a full validation suite for:
+- CTIS Major
+- CNS Major
+- CTIS Minor
+- CNS Minor
+- Distinct credits
+Confirmed:
+- Core logic
+- Elective slot logic
+- Internship logic
+- Capstone ordering
+- 300‑level rule
+- Eligibility integration
+- Progress calculation
+- Distinct credit totals
+Outcome:
+The backend is now production‑ready, accurate, and fully validated.
+
+## 7. Git Commit + Repository Update
+Committed all Lambda updates, SQL rebuilds, and backend logic.
+Outcome:
+The backend milestone for Days 15–16 is complete and version‑controlled.
+
+Summary
+Days 15–16 focused on stabilizing, validating, and finalizing the backend.
+I rebuilt the database, completed the SQL‑driven audit engine, implemented program‑level rules, added distinct‑credit logic, and validated everything end‑to‑end.
+The backend is now fully serverless, fully SQL‑driven, and ready for frontend integration.
+
+Next Steps (Day 17–18)
+- Begin React frontend integration
+- Build UI for:
+- Degree audit
+- Next‑course engine
+- Distinct credits
+- Connect frontend to API Gateway
+- Prepare for S3 + CloudFront deployment
+

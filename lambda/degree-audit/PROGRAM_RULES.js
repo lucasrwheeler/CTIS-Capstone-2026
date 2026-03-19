@@ -21,3 +21,7 @@ const PROGRAM_RULES = {
     total_courses_required: 4
   }
 };
+
+console.log("PROGRAM_RULES LOADED:", Object.keys(PROGRAM_RULES));
+
+module.exports = { PROGRAM_RULES };
