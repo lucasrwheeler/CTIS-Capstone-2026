@@ -244,3 +244,79 @@ Next Steps (Day 17–18)
 - Connect frontend to API Gateway
 - Prepare for S3 + CloudFront deployment
 
+
+ ## Daily Log — Day 17 (Frontend Integration Begins)
+Date: March 24, 2026
+Author: Lucas Wheeler
+Focus: Connecting the React frontend to the fully serverless backend and validating all API Gateway → Lambda → RDS integrations.
+
+1. Verified All Lambda Endpoints Through React
+Today marked the first successful end‑to‑end integration between the React frontend and the serverless backend. I validated all three major academic intelligence endpoints:
+- /degree_audit
+- /eligibility
+- /plan
+Each endpoint returned clean, structured JSON directly into the React console:
+- Degree audit returned the correct core/elective/internship breakdown
+- Eligibility returned correct prerequisite logic
+- Plan returned the upcoming term and recommended courses
+Outcome:
+The entire backend pipeline — React → API Gateway → Lambda → RDS → Lambda → React — is now fully operational.
+
+2. Resolved CORS for Lambda Proxy Integrations
+The eligibility endpoint initially failed due to missing CORS headers on the POST response. I fixed this by adding the full CORS header set directly inside the Lambda handler:
+- Access-Control-Allow-Origin
+- Access-Control-Allow-Headers
+- Access-Control-Allow-Methods
+This resolved the last remaining CORS issue.
+Outcome:
+All three endpoints now support cross‑origin requests from the React development server.
+
+3. Updated Frontend API Layer (api.js)
+I replaced the temporary test functions with proper API wrappers:
+- getDegreeAudit(degree, completed)
+- getEligibility(course_id, completed)
+- getPlan(degree, completed)
+Each function now sends correctly shaped JSON bodies and handles responses cleanly.
+Outcome:
+The frontend now communicates with the backend using production‑ready API calls.
+
+4. Confirmed Lambda Logic With Real Test Inputs
+After updating the Lambda code, I re‑uploaded the ZIP packages and validated each function using:
+- Lambda test console
+- API Gateway test console
+- React frontend test buttons
+All engines returned correct results, including:
+- Eligibility logic
+- Degree audit logic
+- Next‑course planning logic
+Outcome:
+The backend is stable, validated, and ready for UI integration.
+
+5. Completed Backend Milestone (Days 10–16)
+With today’s work, the entire backend milestone is officially complete:
+- Academic intelligence layer (audit, eligibility, planning)
+- SQL‑driven engines
+- Lambda migration
+- API Gateway integration
+- RDS connectivity
+- CORS configuration
+- React connectivity
+Outcome:
+The backend is now production‑ready and fully cloud‑native.
+
+# Next Steps (Day 18–20)
+- Begin building real React UI pages:
+- Degree Audit
+- Eligibility Checker
+- Course Planner
+- Distinct Credits
+- Replace hard‑coded test calls with real user inputs
+- Add remaining endpoints: /courses, /professors, /semester_offerings
+- Prepare for S3 + CloudFront deployment
+
+⭐ Summary
+Today was the turning point where the backend stopped being theoretical and became a living system. All Lambda functions, SQL engines, and API routes are now fully integrated with the frontend. The next phase is UI/UX — transforming raw JSON into a polished, interactive advising platform.
+
+
+
+
