@@ -245,7 +245,8 @@ Next Steps (Day 17–18)
 - Prepare for S3 + CloudFront deployment
 
 
- ## Daily Log — Day 17 (Frontend Integration Begins)
+ # Daily Log — Day 17 (Frontend Integration Begins)
+
 Date: March 24, 2026
 Author: Lucas Wheeler
 Focus: Connecting the React frontend to the fully serverless backend and validating all API Gateway → Lambda → RDS integrations.
@@ -318,5 +319,105 @@ The backend is now production‑ready and fully cloud‑native.
 Today was the turning point where the backend stopped being theoretical and became a living system. All Lambda functions, SQL engines, and API routes are now fully integrated with the frontend. The next phase is UI/UX — transforming raw JSON into a polished, interactive advising platform.
 
 
+
+
+# 🟩 Daily Log — Day 18 (Frontend Integration: Dynamic UI + API‑Driven Pages)
+Date: March 27, 2026
+Author: Lucas Wheeler
+Focus: Converting the React frontend from prototype mode into a fully dynamic, database‑driven academic portal.
+
+## 1. Replaced All Hardcoded Course Inputs With Dynamic Data
+Today I removed every hardcoded course list from the frontend and replaced them with real data from the new /courses Lambda endpoint.
+Completed:
+- Added getCourses() to the API layer
+- Updated:
+- Degree Audit Page
+- Eligibility Checker
+- Course Planner
+- Implemented:
+- Dynamic course checklist
+- Loading + error states
+- Scrollable UI containers
+- Clean checkbox toggling logic
+Outcome:
+All three major academic tools now pull live course data directly from the database. Any future catalog changes will automatically propagate to the UI.
+
+## 2. Fully Integrated Degree Audit With Dynamic Course Selection
+The Degree Audit page is now fully interactive and database‑driven.
+Completed:
+- Replaced static arrays with dynamic course list
+- Added checkbox UI for completed courses
+- Connected to /degree_audit Lambda
+- Displayed:
+- Completed core
+- Remaining core
+- Elective status
+- Internship status
+- Recommended next courses
+- Eligible next courses
+- Notes + progress
+Outcome:
+The Degree Audit page is now a complete, advisor‑grade tool powered entirely by the backend.
+
+## 3. Upgraded Course Planner to Use Dynamic Course Data
+The Course Planner page now mirrors the Degree Audit structure.
+Completed:
+- Removed comma‑separated input
+- Added dynamic checklist
+- Added major‑specific annotations (CTIS Core, Cyber Core)
+- Connected to /plan Lambda
+- Displayed:
+- Top 4 recommended courses
+- Eligible‑now courses
+- Term‑specific planning
+Outcome:
+The planner now feels like a real advising system instead of a prototype.
+
+## 4. Modernized the Eligibility Checker
+The Eligibility Checker now uses the same dynamic course list as the other pages.
+Completed:
+- Kept “Course to Check” as a typed input
+- Replaced completed‑courses text box with dynamic checklist
+- Preserved advanced prerequisite formatting logic
+- Connected to /eligibility Lambda
+Outcome:
+Eligibility checks are now consistent, accurate, and user‑friendly.
+
+## 5. Unified UI Patterns Across All Pages
+All academic tools now share:
+- Dynamic data loading
+- Scrollable checklists
+- Clean labels
+- Consistent spacing
+- Error + loading states
+- Identical checkbox behavior
+Outcome:
+The frontend now feels cohesive and professional, ready for styling and theming.
+
+## ⭐ Summary
+Today marked the moment the frontend became alive.
+All major academic tools — Degree Audit, Eligibility Checker, and Course Planner — are now fully integrated with the serverless backend.
+The system is no longer a prototype.
+It’s a functioning academic advising platform.
+
+## 🔜 Next Steps (Day 19–20)
+As you outlined:
+- Courses Page
+- Add course descriptions from the database
+- Build a clean catalog UI
+- Professor Page
+- Show faculty + courses taught
+- Semester Availability Page
+- Show Fall/Spring/Summer offerings
+- About Me Page
+- Student profile
+- Users / Alumni Page
+- Directory of students + alumni
+- Make everything pretty
+- Layout
+- Navigation
+- Styling
+- Icons
+- Color themes
 
 

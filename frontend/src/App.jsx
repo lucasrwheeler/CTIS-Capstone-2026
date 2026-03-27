@@ -3,6 +3,9 @@ import { getDegreeAudit, getEligibility, getPlan } from "./api";
 import DegreeAuditPage from "./pages/DegreeAuditPage";
 import EligibilityPage from "./pages/EligibilityPage";
 import CoursePlannerPage from "./pages/CoursePlannerPage";
+import CoursesList from "./pages/CoursesList";
+
+
 
 // --------------------------------------
 // HOME PAGE
@@ -81,12 +84,15 @@ export default function App() {
       <Route path="/degree-audit" element={<DegreeAuditPage />} />
       <Route path="/eligibility" element={<EligibilityPage />} />
       <Route path="/planner" element={<CoursePlannerPage />} />
+      <Route path="/courses" element={<CoursesList />} />
+
 
       {/* Placeholder Pages */}
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/course/:id" element={<CourseDetail />} />
       <Route path="/professor/:id" element={<ProfessorDetail />} />
       <Route path="/distinct" element={<DistinctCredits />} />
+      
 
       {/* Old test page (optional) */}
       {/* <Route path="/audit" element={<DegreeAudit />} /> */}

@@ -1,4 +1,4 @@
-const BASE = "https://4w2rvps9e4.execute-api.us-east-1.amazonaws.com/prod";
+export const BASE = "https://4w2rvps9e4.execute-api.us-east-1.amazonaws.com/prod";
 
 export async function getDegreeAudit(degree, completed) {
   return fetch(`${BASE}/degree_audit`, {
@@ -22,4 +22,16 @@ export async function getPlan(payload) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   }).then(r => r.json());
+}
+
+export async function getCourses() {
+  const res = await fetch(`${BASE}/courses`);
+  const data = await res.json();
+
+  // If Lambda wrapped the response, unwrap it
+  if (data.body) {
+    return JSON.parse(data.body);
+  }
+
+  return data;
 }

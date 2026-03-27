@@ -1,16 +1,46 @@
-import { useState } from "react";
-import { getPlan } from "../api";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { getCourses, getPlan } from "../api";
 
 export default function CoursePlannerPage() {
   const [degree, setDegree] = useState("");
   const [term, setTerm] = useState("");
-  const [completed, setCompleted] = useState("");
+  const [completed, setCompleted] = useState([]); // <-- now an array
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Major-specific course groupings
+  // Dynamic course list
+  const [allCourses, setAllCourses] = useState([]);
+  const [loadingCourses, setLoadingCourses] = useState(true);
+  const [errorCourses, setErrorCourses] = useState(null);
+
+  // Load courses on mount
+  useEffect(() => {
+    async function loadCourses() {
+      try {
+        const data = await getCourses();
+        setAllCourses(data);
+      } catch (err) {
+        setErrorCourses(err.message);
+      } finally {
+        setLoadingCourses(false);
+      }
+    }
+
+    loadCourses();
+  }, []);
+
+  // Toggle completed courses
+  function toggleCourse(course) {
+    setCompleted((prev) =>
+      prev.includes(course)
+        ? prev.filter((c) => c !== course)
+        : [...prev, course]
+    );
+  }
+
+  // Major-specific annotation
   const cyberCourses = ["CTIS 370", "CTIS 371", "CTIS 471"];
   const ctisCourses = ["CTIS 342", "CTIS 345", "CTIS 331", "CTIS 322"];
 
@@ -30,15 +60,12 @@ export default function CoursePlannerPage() {
     setResult(null);
 
     try {
-      const completedList = completed
-        .split(",")
-        .map((c) => c.trim())
-        .filter(Boolean);
+      const data = await getPlan({
+        degree,
+        completed,
+        upcomingTerm: term
+      });
 
-const data = await getPlan({
- degree, 
-    completed: completedList,
-  upcomingTerm: term });
       setResult(data);
     } catch (err) {
       console.error(err);
@@ -82,15 +109,34 @@ const data = await getPlan({
         <option value="Spring">Spring</option>
       </select>
 
-      {/* Completed Courses Input */}
-      <label>Completed Courses (comma separated)</label>
-      <input
-        type="text"
-        placeholder="CTIS 210, CTIS 221"
-        value={completed}
-        onChange={(e) => setCompleted(e.target.value)}
-        style={{ width: "100%", marginBottom: "1rem" }}
-      />
+      {/* Completed Courses Checklist */}
+      <label>Completed Courses</label>
+
+      {loadingCourses && <p>Loading courses…</p>}
+      {errorCourses && <p style={{ color: "red" }}>Error: {errorCourses}</p>}
+
+      {!loadingCourses && !errorCourses && (
+        <div
+          style={{
+            border: "1px solid #ccc",
+            padding: "1rem",
+            marginBottom: "1rem",
+            maxHeight: "250px",
+            overflowY: "auto",
+          }}
+        >
+          {allCourses.map((course) => (
+            <label key={course} style={{ display: "block" }}>
+              <input
+                type="checkbox"
+                checked={completed.includes(course)}
+                onChange={() => toggleCourse(course)}
+              />
+              {course}
+            </label>
+          ))}
+        </div>
+      )}
 
       <button onClick={runPlan} disabled={loading}>
         {loading ? "Planning..." : "Generate Plan"}

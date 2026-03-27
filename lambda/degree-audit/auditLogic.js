@@ -46,10 +46,13 @@ async function buildAudit(client, degree, completed) {
   const electiveRuleOK = electiveSatisfied && has300Level;
 
   // 5. Count courses toward total
-  const completedCount =
-    completedCore.length +
-    (internshipSatisfied ? 1 : 0) +
-    Math.min(electiveCount, rules.electives_required);
+ const internshipCount =
+  rules.internship_required && internshipSatisfied ? 1 : 0;
+
+const completedCount =
+  completedCore.length +
+  internshipCount +
+  Math.min(electiveCount, rules.electives_required);
 
   const progress = Math.min(completedCount / rules.total_courses_required, 1.0);
 
