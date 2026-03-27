@@ -21,4 +21,16 @@ async function checkEligibility(client, courseId, completed) {
   return true;
 }
 
-module.exports = { checkEligibility };
+async function getPrereqs(client, course) {
+  const res = await client.query(
+    "SELECT prereq FROM prerequisites WHERE course_id = $1",
+    [course]
+  );
+
+  return res.rows.map(r => r.prereq);
+}
+
+module.exports = {
+  checkEligibility,
+  getPrereqs
+};

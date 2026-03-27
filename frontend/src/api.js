@@ -16,10 +16,10 @@ export async function getEligibility(course_id, completed) {
   }).then(r => r.json());
 }
 
-export async function getPlan(degree, completed) {
+export async function getPlan(payload) {
   return fetch(`${BASE}/plan`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ degree, completed })
+    body: JSON.stringify(payload)
   }).then(r => r.json());
 }
