@@ -9,12 +9,10 @@ export default function DegreeAuditPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Dynamic course list
   const [allCourses, setAllCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [errorCourses, setErrorCourses] = useState(null);
 
-  // Load courses on mount
   useEffect(() => {
     async function loadCourses() {
       try {
@@ -26,16 +24,14 @@ export default function DegreeAuditPage() {
         setLoadingCourses(false);
       }
     }
-
     loadCourses();
   }, []);
 
-  // Toggle a course in/out of completed list
-  function toggleCourse(course) {
+  function toggleCourse(courseId) {
     setCompleted((prev) =>
-      prev.includes(course)
-        ? prev.filter((c) => c !== course)
-        : [...prev, course]
+      prev.includes(courseId)
+        ? prev.filter((c) => c !== courseId)
+        : [...prev, courseId]
     );
   }
 
@@ -63,7 +59,6 @@ export default function DegreeAuditPage() {
         ← Back to Home
       </Link>
 
-      {/* Degree Selector */}
       <label>Degree Program</label>
       <select
         value={degree}
@@ -77,7 +72,6 @@ export default function DegreeAuditPage() {
         <option value="CYBER_MINOR">Cybersecurity Minor</option>
       </select>
 
-      {/* Completed Courses Checklist */}
       <label>Completed Courses</label>
 
       {loadingCourses && <p>Loading courses…</p>}
@@ -94,13 +88,13 @@ export default function DegreeAuditPage() {
           }}
         >
           {allCourses.map((course) => (
-            <label key={course} style={{ display: "block" }}>
+            <label key={course.course_id} style={{ display: "block" }}>
               <input
                 type="checkbox"
-                checked={completed.includes(course)}
-                onChange={() => toggleCourse(course)}
+                checked={completed.includes(course.course_id)}
+                onChange={() => toggleCourse(course.course_id)}
               />
-              {course}
+              {course.course_id} — {course.title}
             </label>
           ))}
         </div>
@@ -112,7 +106,6 @@ export default function DegreeAuditPage() {
 
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Results */}
       {result && (
         <div style={{ marginTop: "2rem" }}>
           <h2>Audit Results</h2>

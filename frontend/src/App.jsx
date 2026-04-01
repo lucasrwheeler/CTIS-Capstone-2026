@@ -13,12 +13,14 @@ import CoursesList from "./pages/CoursesList";
 function Home() {
   return (
     <div style={{ padding: 20 }}>
-      <h1>VCCC Academic Portal</h1>
+      <h1>Guilford CTIS Department Academic Portal</h1>
 
       <Link to="/degree-audit">Go to Degree Audit</Link>
       <br />
       <Link to="/eligibility">Check Course Eligibility</Link>
       <br /> <Link to="/planner">Course Planner</Link>
+     <br /> <Link to="/courses">Courses List</Link>
+
 
       <p>Frontend is running and ready to connect to the backend.</p>
     </div>

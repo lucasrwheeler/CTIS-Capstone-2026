@@ -3,18 +3,16 @@ import { getCourses, getEligibility } from "../api";
 import { Link } from "react-router-dom";
 
 export default function EligibilityPage() {
-  const [courseId, setCourseId] = useState(""); // <-- stays typed input
-  const [completed, setCompleted] = useState([]); // <-- now an array
+  const [courseId, setCourseId] = useState("");
+  const [completed, setCompleted] = useState([]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Dynamic course list
   const [allCourses, setAllCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [errorCourses, setErrorCourses] = useState(null);
 
-  // Load courses on mount
   useEffect(() => {
     async function loadCourses() {
       try {
@@ -26,16 +24,14 @@ export default function EligibilityPage() {
         setLoadingCourses(false);
       }
     }
-
     loadCourses();
   }, []);
 
-  // Toggle completed courses
-  function toggleCourse(course) {
+  function toggleCourse(courseId) {
     setCompleted((prev) =>
-      prev.includes(course)
-        ? prev.filter((c) => c !== course)
-        : [...prev, course]
+      prev.includes(courseId)
+        ? prev.filter((c) => c !== courseId)
+        : [...prev, courseId]
     );
   }
 
@@ -63,7 +59,6 @@ export default function EligibilityPage() {
         ← Back to Home
       </Link>
 
-      {/* Course Input (kept as typed input) */}
       <label>Course ID (e.g., CTIS 310)</label>
       <input
         type="text"
@@ -73,7 +68,6 @@ export default function EligibilityPage() {
         style={{ width: "100%", marginBottom: "1rem" }}
       />
 
-      {/* Completed Courses Checklist */}
       <label>Completed Courses</label>
 
       {loadingCourses && <p>Loading courses…</p>}
@@ -90,13 +84,13 @@ export default function EligibilityPage() {
           }}
         >
           {allCourses.map((course) => (
-            <label key={course} style={{ display: "block" }}>
+            <label key={course.course_id} style={{ display: "block" }}>
               <input
                 type="checkbox"
-                checked={completed.includes(course)}
-                onChange={() => toggleCourse(course)}
+                checked={completed.includes(course.course_id)}
+                onChange={() => toggleCourse(course.course_id)}
               />
-              {course}
+              {course.course_id} — {course.title}
             </label>
           ))}
         </div>
@@ -106,10 +100,8 @@ export default function EligibilityPage() {
         {loading ? "Checking..." : "Check Eligibility"}
       </button>
 
-      {/* Error */}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Results */}
       {result && (
         <div style={{ marginTop: "2rem" }}>
           <h2>Eligibility Results</h2>
@@ -122,7 +114,6 @@ export default function EligibilityPage() {
             <strong>Eligible:</strong> {result.eligible ? "Yes" : "No"}
           </p>
 
-          {/* Missing prerequisites */}
           <h3>Missing Prerequisites</h3>
           <ul>
             {result.missing?.length > 0 ? (
@@ -150,11 +141,9 @@ export default function EligibilityPage() {
             )}
           </ul>
 
-          {/* Explanation */}
           <h3>Explanation</h3>
           <p>{result.explanation}</p>
 
-          {/* Next Courses */}
           {result.next_courses && (
             <>
               <h3>Next Courses</h3>

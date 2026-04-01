@@ -1,7 +1,6 @@
 const { getClient } = require('./db');
 const { buildAudit } = require('./auditLogic');
 const { calculateDistinctCreditsSQL } = require('./distinctSQL');
-// const { askBedrock } = require('./bedrock');  // <-- import only
 
 exports.handler = async (event) => {
   const client = getClient();
@@ -22,7 +21,12 @@ exports.handler = async (event) => {
         console.error("JSON parse error:", err);
         return {
           statusCode: 400,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+          },
           body: JSON.stringify({ error: "Invalid JSON in request body." })
         };
       }
@@ -40,7 +44,9 @@ exports.handler = async (event) => {
         statusCode: 200,
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*"
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
         },
         body: JSON.stringify(result)
       };
@@ -50,7 +56,12 @@ exports.handler = async (event) => {
     if (!body.degree || !body.completed) {
       return {
         statusCode: 400,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "*",
+          "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+        },
         body: JSON.stringify({
           error:
             "Missing required fields. Provide either {degree, completed} or {programA, programB}."
@@ -61,26 +72,23 @@ exports.handler = async (event) => {
     console.log("DEBUG DEGREE:", body.degree);
     console.log("DEBUG COMPLETED:", body.completed);
 
-    const audit = await buildAudit(client, body.degree, body.completed);
+    // ⭐ Normalize Cyber naming
+    let degree = body.degree;
+    if (degree === "CYBER_MAJOR") degree = "CNS_MAJOR";
+    if (degree === "CYBER_MINOR") degree = "CNS_MINOR";
 
-    // ⭐ Bedrock call happens HERE — inside the handler
-    // const explanation = await askBedrock(`
-    //   You are an academic advisor. Explain this degree audit to a student:
+    const audit = await buildAudit(client, degree, body.completed);
 
-    //   ${JSON.stringify(audit, null, 2)}
-    // `);
-
-   // audit.explanation = explanation;
-   // const explanation = await askBedrock(...);
-// audit.explanation = explanation;
-
-audit.explanation = "AI explanation temporarily disabled due to Bedrock quota limits.";
+    audit.explanation =
+      "AI explanation temporarily disabled due to Bedrock quota limits.";
 
     return {
       statusCode: 200,
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
       },
       body: JSON.stringify(audit)
     };
@@ -90,7 +98,12 @@ audit.explanation = "AI explanation temporarily disabled due to Bedrock quota li
 
     return {
       statusCode: 500,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+      },
       body: JSON.stringify({ error: err.message })
     };
 

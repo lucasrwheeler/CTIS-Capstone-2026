@@ -5,17 +5,15 @@ import { getCourses, getPlan } from "../api";
 export default function CoursePlannerPage() {
   const [degree, setDegree] = useState("");
   const [term, setTerm] = useState("");
-  const [completed, setCompleted] = useState([]); // <-- now an array
+  const [completed, setCompleted] = useState([]);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Dynamic course list
   const [allCourses, setAllCourses] = useState([]);
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [errorCourses, setErrorCourses] = useState(null);
 
-  // Load courses on mount
   useEffect(() => {
     async function loadCourses() {
       try {
@@ -27,16 +25,14 @@ export default function CoursePlannerPage() {
         setLoadingCourses(false);
       }
     }
-
     loadCourses();
   }, []);
 
-  // Toggle completed courses
-  function toggleCourse(course) {
+  function toggleCourse(courseId) {
     setCompleted((prev) =>
-      prev.includes(course)
-        ? prev.filter((c) => c !== course)
-        : [...prev, course]
+      prev.includes(courseId)
+        ? prev.filter((c) => c !== courseId)
+        : [...prev, courseId]
     );
   }
 
@@ -44,14 +40,20 @@ export default function CoursePlannerPage() {
   const cyberCourses = ["CTIS 370", "CTIS 371", "CTIS 471"];
   const ctisCourses = ["CTIS 342", "CTIS 345", "CTIS 331", "CTIS 322"];
 
-  function annotate(course) {
-    if ((degree === "CNS_MAJOR" || degree === "CNS_MINOR") && cyberCourses.includes(course)) {
-      return `${course} (Cyber Core)`;
+  function annotate(courseId) {
+    if (
+      (degree === "CNS_MAJOR" || degree === "CNS_MINOR") &&
+      cyberCourses.includes(courseId)
+    ) {
+      return `${courseId} (Cyber Core)`;
     }
-    if ((degree === "CTIS_MAJOR" || degree === "CTIS_MINOR") && ctisCourses.includes(course)) {
-      return `${course} (CTIS Core)`;
+    if (
+      (degree === "CTIS_MAJOR" || degree === "CTIS_MINOR") &&
+      ctisCourses.includes(courseId)
+    ) {
+      return `${courseId} (CTIS Core)`;
     }
-    return course;
+    return courseId;
   }
 
   async function runPlan() {
@@ -63,7 +65,7 @@ export default function CoursePlannerPage() {
       const data = await getPlan({
         degree,
         completed,
-        upcomingTerm: term
+        upcomingTerm: term,
       });
 
       setResult(data);
@@ -126,13 +128,13 @@ export default function CoursePlannerPage() {
           }}
         >
           {allCourses.map((course) => (
-            <label key={course} style={{ display: "block" }}>
+            <label key={course.course_id} style={{ display: "block" }}>
               <input
                 type="checkbox"
-                checked={completed.includes(course)}
-                onChange={() => toggleCourse(course)}
+                checked={completed.includes(course.course_id)}
+                onChange={() => toggleCourse(course.course_id)}
               />
-              {course}
+              {course.course_id} — {course.title}
             </label>
           ))}
         </div>
@@ -142,10 +144,8 @@ export default function CoursePlannerPage() {
         {loading ? "Planning..." : "Generate Plan"}
       </button>
 
-      {/* Error */}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {/* Results */}
       {result && (
         <div style={{ marginTop: "2rem" }}>
           <h2>Recommended Plan</h2>
@@ -176,9 +176,16 @@ export default function CoursePlannerPage() {
             )}
           </ul>
 
-          <p style={{ marginTop: "1rem", fontStyle: "italic", color: "#555" }}>
-            Note: Electives, internships, and independent studies are not shown here.  
-            Check your Degree Audit for remaining elective or general education requirements.
+          <p
+            style={{
+              marginTop: "1rem",
+              fontStyle: "italic",
+              color: "#555",
+            }}
+          >
+            Note: Electives, internships, and independent studies are not shown
+            here. Check your Degree Audit for remaining elective or general
+            education requirements.
           </p>
         </div>
       )}

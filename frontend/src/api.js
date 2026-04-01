@@ -26,12 +26,23 @@ export async function getPlan(payload) {
 
 export async function getCourses() {
   const res = await fetch(`${BASE}/courses`);
-  const data = await res.json();
 
-  // If Lambda wrapped the response, unwrap it
-  if (data.body) {
-    return JSON.parse(data.body);
+  if (!res.ok) {
+    throw new Error("Failed to fetch courses");
   }
 
-  return data;
+  const data = await res.json();
+
+  // Ensure it's always an array
+  if (Array.isArray(data)) {
+    return data;
+  }
+
+  // If API Gateway wrapped it (rare), unwrap it
+  if (data.body) {
+    const parsed = JSON.parse(data.body);
+    return Array.isArray(parsed) ? parsed : [];
+  }
+
+  return [];
 }
