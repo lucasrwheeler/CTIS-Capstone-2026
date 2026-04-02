@@ -182,17 +182,7 @@ export default function CoursesList() {
             </p>
 
             <p>
-             <strong>Usual Professor:</strong>{" "}
-{course.professor ? (
-  <Link
-    to={`/professors/${encodeURIComponent(course.professor)}`}
-    style={{ color: "#0a4a8a", fontWeight: 600 }}
-  >
-    {course.professor}
-  </Link>
-) : (
-  "—"
-)}
+              <strong>Usual Professor:</strong> {course.professor}
             </p>
 
             <p>
@@ -229,8 +219,27 @@ export default function CoursesList() {
           lineHeight: 1.55,
         }}
       >
-        <p style={{ margin: 0 }}>
-          This catalog lists all courses offered within the CTIS Department...
+       <p style={{ margin: 0 }}>
+          This catalog lists all courses offered within the CTIS Department,
+          including both the Computer Technology & Information Systems major and
+          the Cyber & Network Security major. Courses are grouped into two
+          categories:
+          <br /><br />
+
+          <span style={{ color: "#1a4dbf", fontWeight: "600" }}>
+            Core Courses
+          </span>{" "}
+          — These fulfill required components for at least one CTIS or CNS
+          program, including foundational classes, core requirements,
+          internships, minor requirements, and capstone requirements.
+          <br /><br />
+
+          <span style={{ color: "#0f7a3a", fontWeight: "600" }}>
+            Strict Electives
+          </span>{" "}
+          — These include all other CTIS‑prefix courses that are not required,
+          as well as any cross‑listed courses that may count toward elective
+          credit for at least one of the two majors.
         </p>
       </div>
 
