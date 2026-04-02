@@ -1,13 +1,21 @@
 import { useEffect, useState } from "react";
 import { getCourses } from "../api";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [search, setSearch] = useState("");
-  const [expanded, setExpanded] = useState({});
+
+  // ⭐ NEW: read ?open=COURSE_ID from URL
+  const location = useLocation();
+  const openCourseId = new URLSearchParams(location.search).get("open");
+
+  // ⭐ NEW: expanded state pre‑opens the target course
+  const [expanded, setExpanded] = useState(
+    openCourseId ? { [openCourseId]: true } : {}
+  );
 
   useEffect(() => {
     async function load() {
@@ -23,6 +31,18 @@ export default function CoursesList() {
 
     load();
   }, []);
+
+  // ⭐ NEW: scroll to the opened course after loading
+  useEffect(() => {
+    if (!loading && openCourseId) {
+      const el = document.getElementById(`course-${openCourseId}`);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 100);
+      }
+    }
+  }, [loading, openCourseId]);
 
   function toggleExpand(courseId) {
     setExpanded((prev) => ({
@@ -64,48 +84,45 @@ export default function CoursesList() {
 
     const isCore = course.is_core;
 
-// Format core_for nicely and remove duplicates
-const formattedCoreFor = (() => {
-  if (!course.core_for) return [];
+    // Format core_for nicely and remove duplicates
+    const formattedCoreFor = (() => {
+      if (!course.core_for) return [];
 
-  // Step 1: convert raw values to readable labels
-  let labels = course.core_for.map((d) =>
-    d
-      .replace("_MAJOR", " Major")
-      .replace("_MINOR", " Minor")
-      .replace(/\bCTIS\b/, "CTIS")
-      .replace(/\bCNS\b/, "CNS")
-  );
+      let labels = course.core_for.map((d) =>
+        d
+          .replace("_MAJOR", " Major")
+          .replace("_MINOR", " Minor")
+          .replace(/\bCTIS\b/, "CTIS")
+          .replace(/\bCNS\b/, "CNS")
+      );
 
-  // Step 2: remove exact duplicates
-  labels = [...new Set(labels)];
+      labels = [...new Set(labels)];
 
-  // Step 3: prioritize majors/minors over plain department names
-  const clean = [];
+      const clean = [];
 
-  const hasCTISMajor = labels.includes("CTIS Major");
-  const hasCTISMinor = labels.includes("CTIS Minor");
-  const hasCTIS = labels.includes("CTIS");
+      const hasCTISMajor = labels.includes("CTIS Major");
+      const hasCTISMinor = labels.includes("CTIS Minor");
+      const hasCTIS = labels.includes("CTIS");
 
-  const hasCNSMajor = labels.includes("CNS Major");
-  const hasCNSMinor = labels.includes("CNS Minor");
-  const hasCNS = labels.includes("CNS");
+      const hasCNSMajor = labels.includes("CNS Major");
+      const hasCNSMinor = labels.includes("CNS Minor");
+      const hasCNS = labels.includes("CNS");
 
-  if (hasCTISMajor) clean.push("CTIS Major");
-  if (hasCTISMinor) clean.push("CTIS Minor");
-  if (!hasCTISMajor && !hasCTISMinor && hasCTIS) clean.push("CTIS");
+      if (hasCTISMajor) clean.push("CTIS Major");
+      if (hasCTISMinor) clean.push("CTIS Minor");
+      if (!hasCTISMajor && !hasCTISMinor && hasCTIS) clean.push("CTIS");
 
-  if (hasCNSMajor) clean.push("CNS Major");
-  if (hasCNSMinor) clean.push("CNS Minor");
-  if (!hasCNSMajor && !hasCNSMinor && hasCNS) clean.push("CNS");
+      if (hasCNSMajor) clean.push("CNS Major");
+      if (hasCNSMinor) clean.push("CNS Minor");
+      if (!hasCNSMajor && !hasCNSMinor && hasCNS) clean.push("CNS");
 
-  return clean;
-})();
-
+      return clean;
+    })();
 
     return (
       <div
         key={course.course_id}
+        id={`course-${course.course_id}`}   // ⭐ NEW: scroll target
         style={{
           borderRadius: 8,
           padding: "1rem",
@@ -141,7 +158,6 @@ const formattedCoreFor = (() => {
               <strong>Credits:</strong> {course.credits}
             </p>
 
-            {/* Core For Section */}
             {formattedCoreFor.length > 0 && (
               <p>
                 <strong>Core For:</strong>{" "}
@@ -166,7 +182,17 @@ const formattedCoreFor = (() => {
             </p>
 
             <p>
-              <strong>Usual Professor:</strong> {course.professor}
+             <strong>Usual Professor:</strong>{" "}
+{course.professor ? (
+  <Link
+    to={`/professors/${encodeURIComponent(course.professor)}`}
+    style={{ color: "#0a4a8a", fontWeight: 600 }}
+  >
+    {course.professor}
+  </Link>
+) : (
+  "—"
+)}
             </p>
 
             <p>
@@ -187,10 +213,10 @@ const formattedCoreFor = (() => {
       <h1 style={{ fontSize: "2.2rem", marginBottom: "1rem" }}>
         Course Catalog
       </h1>
-      <Link to="/" style={{ display: "block", marginBottom: "1rem", fontSize: "1rem" }}>
-  ← Back to Home
-</Link>
 
+      <Link to="/" style={{ display: "block", marginBottom: "1rem", fontSize: "1rem" }}>
+        ← Back to Home
+      </Link>
 
       {/* Page Description */}
       <div
@@ -204,26 +230,7 @@ const formattedCoreFor = (() => {
         }}
       >
         <p style={{ margin: 0 }}>
-          This catalog lists all courses offered within the CTIS Department,
-          including both the Computer Technology & Information Systems major and
-          the Cyber & Network Security major. Courses are grouped into two
-          categories:
-          <br /><br />
-
-          <span style={{ color: "#1a4dbf", fontWeight: "600" }}>
-            Core Courses
-          </span>{" "}
-          — These fulfill required components for at least one CTIS or CNS
-          program, including foundational classes, core requirements,
-          internships, minor requirements, and capstone requirements.
-          <br /><br />
-
-          <span style={{ color: "#0f7a3a", fontWeight: "600" }}>
-            Strict Electives
-          </span>{" "}
-          — These include all other CTIS‑prefix courses that are not required,
-          as well as any cross‑listed courses that may count toward elective
-          credit for at least one of the two majors.
+          This catalog lists all courses offered within the CTIS Department...
         </p>
       </div>
 

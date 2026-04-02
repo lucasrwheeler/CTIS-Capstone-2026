@@ -66,7 +66,7 @@ export async function getCourses() {
 }
 
 // ===============================
-// Professors
+// Professors (list)
 // ===============================
 export async function getProfessors() {
   const res = await fetch(`${BASE}/professors`);
@@ -87,11 +87,22 @@ export async function getProfessors() {
   return Array.isArray(data) ? data : [];
 }
 
+// ===============================
+// Single Professor
+// ===============================
 export async function getProfessor(name) {
-  const encoded = encodeURIComponent(name);
-  const res = await fetch(`${BASE}/professors/${encoded}`);
+  const url = `${BASE}/professors/${encodeURIComponent(name)}`;
+  console.log("Fetching professor:", url);
+
+  const res = await fetch(url);
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch professor");
+  }
+
   const data = await res.json();
 
+  // API Gateway wrapped response
   if (data.body) {
     try {
       return JSON.parse(data.body);
