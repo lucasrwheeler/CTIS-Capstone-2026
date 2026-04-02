@@ -1,0 +1,10 @@
+{
+  "name": "professors-lambda",
+  "version": "1.0.0",
+  "description": "Lambda for professors directory and profiles",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "pg": "^8.11.3"
+  }
+}

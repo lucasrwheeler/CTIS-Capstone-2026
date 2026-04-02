@@ -166,11 +166,11 @@ const formattedCoreFor = (() => {
             </p>
 
             <p>
-              <strong>Professor:</strong> {course.professor}
+              <strong>Usual Professor:</strong> {course.professor}
             </p>
 
             <p>
-              <strong>Location:</strong> {course.location}
+              <strong>Usual Location:</strong> {course.location}
             </p>
 
             <p>

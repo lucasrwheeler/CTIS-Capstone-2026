@@ -1,0 +1,58 @@
+/* Remove ugly link styling globally */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+a:visited {
+  color: inherit;
+}
+
+/* Page container */
+.page-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* Title */
+.page-title {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+  color: #0a2a43;
+}
+
+/* Grid layout */
+.professor-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Card styling */
+.professor-card {
+  background: white;
+  padding: 1.25rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.professor-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+/* Name link */
+.professor-name {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #0a4a8a;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.professor-name:visited {
+  color: #0a4a8a;
+}

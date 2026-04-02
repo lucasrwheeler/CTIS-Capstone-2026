@@ -4,6 +4,9 @@ import DegreeAuditPage from "./pages/DegreeAuditPage";
 import EligibilityPage from "./pages/EligibilityPage";
 import CoursePlannerPage from "./pages/CoursePlannerPage";
 import CoursesList from "./pages/CoursesList";
+import Professors from "./pages/Professors";
+import ProfessorProfile from "./pages/ProfessorProfile";
+
 
 
 
@@ -20,7 +23,7 @@ function Home() {
       <Link to="/eligibility">Check Course Eligibility</Link>
       <br /> <Link to="/planner">Course Planner</Link>
      <br /> <Link to="/courses">Courses List</Link>
-
+<br /> <Link to="/professors">Professors</Link>
 
       <p>Frontend is running and ready to connect to the backend.</p>
     </div>
@@ -87,6 +90,8 @@ export default function App() {
       <Route path="/eligibility" element={<EligibilityPage />} />
       <Route path="/planner" element={<CoursePlannerPage />} />
       <Route path="/courses" element={<CoursesList />} />
+      <Route path="/professors" element={<Professors />} />
+<Route path="/professors/:name" element={<ProfessorProfile />} />
 
 
       {/* Placeholder Pages */}
@@ -94,6 +99,7 @@ export default function App() {
       <Route path="/course/:id" element={<CourseDetail />} />
       <Route path="/professor/:id" element={<ProfessorDetail />} />
       <Route path="/distinct" element={<DistinctCredits />} />
+      
       
 
       {/* Old test page (optional) */}

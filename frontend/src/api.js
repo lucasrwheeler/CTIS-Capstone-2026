@@ -1,5 +1,10 @@
 export const BASE = "https://4w2rvps9e4.execute-api.us-east-1.amazonaws.com/prod";
 
+console.log("USING API BASE =", BASE);
+
+// ===============================
+// Degree Audit
+// ===============================
 export async function getDegreeAudit(degree, completed) {
   return fetch(`${BASE}/degree_audit`, {
     method: "POST",
@@ -8,6 +13,9 @@ export async function getDegreeAudit(degree, completed) {
   }).then(r => r.json());
 }
 
+// ===============================
+// Eligibility
+// ===============================
 export async function getEligibility(course_id, completed) {
   return fetch(`${BASE}/eligibility`, {
     method: "POST",
@@ -16,6 +24,9 @@ export async function getEligibility(course_id, completed) {
   }).then(r => r.json());
 }
 
+// ===============================
+// Planner
+// ===============================
 export async function getPlan(payload) {
   return fetch(`${BASE}/plan`, {
     method: "POST",
@@ -24,6 +35,9 @@ export async function getPlan(payload) {
   }).then(r => r.json());
 }
 
+// ===============================
+// Courses
+// ===============================
 export async function getCourses() {
   const res = await fetch(`${BASE}/courses`);
 
@@ -33,16 +47,59 @@ export async function getCourses() {
 
   const data = await res.json();
 
-  // Ensure it's always an array
+  // Normal case
   if (Array.isArray(data)) {
     return data;
   }
 
-  // If API Gateway wrapped it (rare), unwrap it
+  // API Gateway wrapped response
   if (data.body) {
-    const parsed = JSON.parse(data.body);
-    return Array.isArray(parsed) ? parsed : [];
+    try {
+      const parsed = JSON.parse(data.body);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   }
 
   return [];
+}
+
+// ===============================
+// Professors
+// ===============================
+export async function getProfessors() {
+  const res = await fetch(`${BASE}/professors`);
+  const data = await res.json();
+
+  // API Gateway wrapped response
+  if (data.body) {
+    try {
+      const parsed = JSON.parse(data.body);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      console.error("Failed to parse professors body:", err);
+      return [];
+    }
+  }
+
+  // Normal case
+  return Array.isArray(data) ? data : [];
+}
+
+export async function getProfessor(name) {
+  const encoded = encodeURIComponent(name);
+  const res = await fetch(`${BASE}/professors/${encoded}`);
+  const data = await res.json();
+
+  if (data.body) {
+    try {
+      return JSON.parse(data.body);
+    } catch (err) {
+      console.error("Failed to parse professor body:", err);
+      return null;
+    }
+  }
+
+  return data;
 }
