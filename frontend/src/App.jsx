@@ -7,6 +7,7 @@ import CoursesList from "./pages/CoursesList";
 import Professors from "./pages/Professors";
 import ProfessorProfile from "./pages/ProfessorProfile";
 import DistinctCredits from "./pages/DistinctCredits";
+import AIAdvisorPage from "./pages/AIAdvisorPage";
 
 
 
@@ -25,6 +26,7 @@ function Home() {
       <br /> <Link to="/planner">Course Planner</Link>
      <br /> <Link to="/courses">Courses List</Link>
 <br /> <Link to="/professors">Professors</Link>
+<Link to="/ai-advisor">AI Academic Advisor</Link>
 
       <p>Frontend is running and ready to connect to the backend.</p>
     </div>
@@ -91,6 +93,7 @@ export default function App() {
       <Route path="/professors" element={<Professors />} />
 <Route path="/professors/:name" element={<ProfessorProfile />} />
 <Route path="/distinct" element={<DistinctCredits />} />
+<Route path="/ai-advisor" element={<AIAdvisorPage />} />
 
 
       {/* Placeholder Pages */}

@@ -52,6 +52,24 @@ export async function getPlan(payload) {
 }
 
 // ===============================
+// AI Advisor (Bedrock)
+// ===============================
+export async function getAIAdvice(question, degree = "", completed = []) {
+  const res = await fetch(`${BASE}/degree_audit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ aiMode: true, question, degree, completed })
+  });
+
+  const data = await res.json();
+
+  if (data.body) {
+    try { return JSON.parse(data.body); } catch { return data; }
+  }
+  return data;
+}
+
+// ===============================
 // Courses
 // ===============================
 export async function getCourses() {
@@ -127,6 +145,8 @@ export async function getProfessor(name) {
       return null;
     }
   }
+
+  
 
   return data;
 }
