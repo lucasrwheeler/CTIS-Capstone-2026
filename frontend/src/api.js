@@ -12,6 +12,7 @@ export async function getDegreeAudit(degree, completed) {
     body: JSON.stringify({ degree, completed })
   }).then(r => r.json());
 }
+
 // ===============================
 // Distinct Calculation
 // ===============================
@@ -22,7 +23,6 @@ export async function getDistinctCredits(programA, programB) {
     body: JSON.stringify({ programA, programB })
   });
   const data = await res.json();
-
   if (data.body) {
     try { return JSON.parse(data.body); } catch { return data; }
   }
@@ -60,9 +60,7 @@ export async function getAIAdvice(question, degree = "", completed = []) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ aiMode: true, question, degree, completed })
   });
-
   const data = await res.json();
-
   if (data.body) {
     try { return JSON.parse(data.body); } catch { return data; }
   }
@@ -74,28 +72,15 @@ export async function getAIAdvice(question, degree = "", completed = []) {
 // ===============================
 export async function getCourses() {
   const res = await fetch(`${BASE}/courses`);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch courses");
-  }
-
+  if (!res.ok) throw new Error("Failed to fetch courses");
   const data = await res.json();
-
-  // Normal case
-  if (Array.isArray(data)) {
-    return data;
-  }
-
-  // API Gateway wrapped response
+  if (Array.isArray(data)) return data;
   if (data.body) {
     try {
       const parsed = JSON.parse(data.body);
       return Array.isArray(parsed) ? parsed : [];
-    } catch {
-      return [];
-    }
+    } catch { return []; }
   }
-
   return [];
 }
 
@@ -105,8 +90,6 @@ export async function getCourses() {
 export async function getProfessors() {
   const res = await fetch(`${BASE}/professors`);
   const data = await res.json();
-
-  // API Gateway wrapped response
   if (data.body) {
     try {
       const parsed = JSON.parse(data.body);
@@ -116,8 +99,6 @@ export async function getProfessors() {
       return [];
     }
   }
-
-  // Normal case
   return Array.isArray(data) ? data : [];
 }
 
@@ -127,26 +108,39 @@ export async function getProfessors() {
 export async function getProfessor(name) {
   const url = `${BASE}/professors/${encodeURIComponent(name)}`;
   console.log("Fetching professor:", url);
-
   const res = await fetch(url);
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch professor");
-  }
-
+  if (!res.ok) throw new Error("Failed to fetch professor");
   const data = await res.json();
-
-  // API Gateway wrapped response
   if (data.body) {
-    try {
-      return JSON.parse(data.body);
-    } catch (err) {
-      console.error("Failed to parse professor body:", err);
-      return null;
-    }
+    try { return JSON.parse(data.body); }
+    catch (err) { console.error("Failed to parse professor body:", err); return null; }
   }
+  return data;
+}
 
-  
+// ===============================
+// Professor Extended Profile
+// ===============================
+export async function getProfessorProfile(name) {
+  const res = await fetch(`${BASE}/professors/${encodeURIComponent(name)}/profile`);
+  const data = await res.json();
+  if (data.body) {
+    try { return JSON.parse(data.body); } catch { return data; }
+  }
+  return data;
+}
 
+// idToken is the Cognito ID token — required for POST
+export async function updateProfessorProfile(name, profile, idToken) {
+  const res = await fetch(`${BASE}/professors/${encodeURIComponent(name)}/profile`, {
+    method: "POST",
+    headers: {
+      "Content-Type":  "application/json",
+      "Authorization": idToken
+    },
+    body: JSON.stringify(profile)
+  });
+  const data = await res.json();
+  if (data.body) { try { return JSON.parse(data.body); } catch { return data; } }
   return data;
 }

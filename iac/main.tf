@@ -100,6 +100,6 @@ module "iam" {
   source = "./iam"
 }
 
-module "frontend" {
-  source = "./frontend"
-}
+# module "frontend" {
+#   source = "./frontend"
+# }
