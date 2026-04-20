@@ -12,6 +12,22 @@ export async function getDegreeAudit(degree, completed) {
     body: JSON.stringify({ degree, completed })
   }).then(r => r.json());
 }
+// ===============================
+// Distinct Calculation
+// ===============================
+export async function getDistinctCredits(programA, programB) {
+  const res = await fetch(`${BASE}/degree_audit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ programA, programB })
+  });
+  const data = await res.json();
+
+  if (data.body) {
+    try { return JSON.parse(data.body); } catch { return data; }
+  }
+  return data;
+}
 
 // ===============================
 // Eligibility

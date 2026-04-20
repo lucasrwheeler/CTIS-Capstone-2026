@@ -6,6 +6,7 @@ import CoursePlannerPage from "./pages/CoursePlannerPage";
 import CoursesList from "./pages/CoursesList";
 import Professors from "./pages/Professors";
 import ProfessorProfile from "./pages/ProfessorProfile";
+import DistinctCredits from "./pages/DistinctCredits";
 
 
 
@@ -73,9 +74,6 @@ function ProfessorDetail() {
   return <h1>Professor Detail</h1>;
 }
 
-function DistinctCredits() {
-  return <h1>Distinct Credits Comparison</h1>;
-}
 
 // --------------------------------------
 // MAIN APP ROUTER
@@ -92,13 +90,13 @@ export default function App() {
       <Route path="/courses" element={<CoursesList />} />
       <Route path="/professors" element={<Professors />} />
 <Route path="/professors/:name" element={<ProfessorProfile />} />
+<Route path="/distinct" element={<DistinctCredits />} />
 
 
       {/* Placeholder Pages */}
       <Route path="/catalog" element={<Catalog />} />
       <Route path="/course/:id" element={<CourseDetail />} />
       <Route path="/professor/:id" element={<ProfessorDetail />} />
-      <Route path="/distinct" element={<DistinctCredits />} />
       
       
 

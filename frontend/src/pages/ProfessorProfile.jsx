@@ -1,106 +1,135 @@
-import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { getProfessors } from "../api";
 
-export default function ProfessorProfile() {
-  const { name } = useParams();
-  const [professor, setProfessor] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const all = await getProfessors();
-        const decodedName = decodeURIComponent(name);
-        const match = all.find(
-          (p) => p.name.toLowerCase() === decodedName.toLowerCase()
-        );
-        if (!match) {
-          setError(true);
-        } else {
-          setProfessor(match);
-        }
-      } catch (err) {
-        console.error("Failed to load professor:", err);
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, [name]);
-
-  if (loading) return <div className="page-container">Loading professor…</div>;
-  if (error || !professor) return (
-    <div className="page-container">
-      <p>Professor not found.</p>
-      <Link to="/professors">← Back to Professors</Link>
-    </div>
-  );
+function ProfessorCard({ professor, faded }) {
+  const courseCount = professor.courses?.length ?? 0;
 
   return (
-    <div className="page-container">
-      <Link to="/professors" style={{ color: "#0a4a8a", textDecoration: "none", fontSize: "0.9rem" }}>
-        ← Back to Professors
-      </Link>
-
-      <div style={{ marginTop: "1.5rem", marginBottom: "2rem", paddingBottom: "1.5rem", borderBottom: "2px solid #e2e8f0" }}>
-        <h1 className="page-title" style={{ marginBottom: "0.25rem" }}>
-          {professor.name}
-        </h1>
-        <p style={{ fontSize: "1.1rem", color: "#4a5568", margin: 0 }}>
-          {professor.role} &mdash; {professor.department}
-        </p>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "2rem" }}>
-        <div className="professor-card" style={{ margin: 0 }}>
-          <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#0a2a43", marginBottom: "0.5rem" }}>
-            Department
-          </h2>
-          <p style={{ margin: 0, color: "#4a5568" }}>{professor.department}</p>
+    <Link
+      to={`/professors/${encodeURIComponent(professor.name)}`}
+      style={{ textDecoration: "none", display: "block" }}
+    >
+      <div
+        className="professor-card"
+        style={{
+          opacity: faded ? 0.75 : 1,
+          borderLeft: faded ? "4px solid #cbd5e1" : "4px solid #0a4a8a",
+          cursor: "pointer",
+          transition: "box-shadow 0.15s",
+        }}
+        onMouseEnter={e => e.currentTarget.style.boxShadow = "0 2px 12px rgba(10,74,138,0.10)"}
+        onMouseLeave={e => e.currentTarget.style.boxShadow = ""}
+      >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.5rem" }}>
+          <div>
+            <h3 style={{ margin: 0, color: "#0a2a43", fontSize: "1.05rem" }}>{professor.name}</h3>
+            {professor.role && (
+              <p style={{ margin: "0.15rem 0 0", fontSize: "0.82rem", color: "#718096" }}>
+                {professor.role}{professor.department ? ` · ${professor.department}` : ""}
+              </p>
+            )}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span style={{
+              fontSize: "0.78rem",
+              fontWeight: 600,
+              padding: "0.2rem 0.55rem",
+              borderRadius: 12,
+              background: courseCount > 0 ? "#eff6ff" : "#f1f5f9",
+              color: courseCount > 0 ? "#1e40af" : "#94a3b8",
+              border: `1px solid ${courseCount > 0 ? "#bfdbfe" : "#e2e8f0"}`,
+              whiteSpace: "nowrap",
+            }}>
+              {courseCount === 0 ? "No current courses" : `${courseCount} course${courseCount !== 1 ? "s" : ""}`}
+            </span>
+            <span style={{ color: "#94a3b8", fontSize: "1rem" }}>›</span>
+          </div>
         </div>
 
-        <div className="professor-card" style={{ margin: 0 }}>
-          <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#0a2a43", marginBottom: "0.5rem" }}>
-            Position
-          </h2>
-          <p style={{ margin: 0, color: "#4a5568" }}>{professor.role}</p>
-        </div>
-      </div>
-
-      <div>
-        <h2 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0a2a43", marginBottom: "1rem" }}>
-          Courses Taught
-        </h2>
-
-        {!professor.courses || professor.courses.length === 0 ? (
-          <p style={{ color: "#718096" }}>No courses currently assigned.</p>
-        ) : (
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem" }}>
-            {professor.courses.map((courseId) => (
-              <Link
+        {courseCount > 0 && (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem", marginTop: "0.6rem" }}>
+            {professor.courses.map(courseId => (
+              <span
                 key={courseId}
-                to={`/courses?open=${encodeURIComponent(courseId)}`}
                 style={{
-                  display: "inline-block",
-                  padding: "0.4rem 0.9rem",
-                  background: "#ebf4ff",
-                  color: "#0a4a8a",
-                  borderRadius: "6px",
+                  padding: "0.25rem 0.65rem",
+                  borderRadius: 5,
+                  fontSize: "0.82rem",
                   fontWeight: 600,
-                  fontSize: "0.9rem",
-                  textDecoration: "none",
-                  border: "1px solid #bee3f8",
+                  background: "#f0f4ff",
+                  color: "#0a4a8a",
+                  border: "1px solid #c7d7f5",
                 }}
               >
                 {courseId}
-              </Link>
+              </span>
             ))}
           </div>
         )}
       </div>
+    </Link>
+  );
+}
+
+export default function ProfessorProfile() {
+  const [professors, setProfessors] = useState([]);
+  const [loading, setLoading]       = useState(true);
+  const [error, setError]           = useState(null);
+
+  useEffect(() => {
+    getProfessors()
+      .then(data => setProfessors(data || []))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const active = professors.filter(p => p.name !== "Varies" && (p.courses?.length ?? 0) > 0);
+  const past   = professors.filter(p => p.name === "Varies" || (p.courses?.length ?? 0) === 0);
+
+  return (
+    <div className="page-container">
+      <Link to="/" style={{ color: "#0a4a8a", textDecoration: "none", fontSize: "0.9rem" }}>
+        ← Back to Home
+      </Link>
+
+      <h1 className="page-title" style={{ marginTop: "1rem" }}>Faculty</h1>
+
+      {loading && <p style={{ color: "#718096" }}>Loading faculty…</p>}
+      {error   && <p style={{ color: "red" }}>Error: {error}</p>}
+
+      {!loading && !error && (
+        <>
+          <p style={{ color: "#4a5568", marginBottom: "1.5rem" }}>
+            {active.length} faculty member{active.length !== 1 ? "s" : ""} currently teaching in the CTIS/CNS department.
+          </p>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "1rem", marginBottom: "3rem" }}>
+            {active.map(p => (
+              <ProfessorCard key={p.name} professor={p} faded={false} />
+            ))}
+          </div>
+
+          {past.length > 0 && (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1rem" }}>
+                <h2 style={{ margin: 0, color: "#64748b", fontSize: "1.05rem", fontWeight: 700 }}>
+                  Past &amp; Varies Instructors
+                </h2>
+                <div style={{ flex: 1, height: 1, background: "#e2e8f0" }} />
+              </div>
+              <p style={{ color: "#94a3b8", fontSize: "0.875rem", marginBottom: "1.25rem" }}>
+                Instructors who have taught department courses but are no longer actively assigned, or courses listed as "Varies."
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
+                {past.map(p => (
+                  <ProfessorCard key={p.name} professor={p} faded={true} />
+                ))}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
