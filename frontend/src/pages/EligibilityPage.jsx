@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { getCourses, getEligibility } from "../api";
 import { Link } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
 
 export default function EligibilityPage() {
   const [courseId, setCourseId] = useState("");
@@ -53,11 +54,17 @@ export default function EligibilityPage() {
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Course Eligibility Checker</h1>
+
 
       <Link to="/" style={{ display: "block", marginBottom: "1rem" }}>
         ← Back to Home
       </Link>
+
+      <PageHeader
+  icon="✅"
+  title="Course Eligibility"
+  description="To find out if your are elgibile for a spcefic course, Enter the courses you've completed to determing the correct prerequisities/requirements to take the course."
+/>
 
       <label>Course ID (e.g., CTIS 310)</label>
       <input

@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getCourses, getDegreeAudit } from "../api";
+import PageHeader from "../components/PageHeader";
+
 
 export default function DegreeAuditPage() {
   const [degree, setDegree] = useState("CTIS_MAJOR");
@@ -85,11 +87,17 @@ export default function DegreeAuditPage() {
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Degree Audit</h1>
+     
 
       <Link to="/" style={{ display: "block", marginBottom: "1rem" }}>
         ← Back to Home
       </Link>
+
+      <PageHeader
+  icon="🎓"
+  title="Degree Audit"
+  description="Enter the courses you've completed and the Degree/Program of your choice to see exactly where you stand toward your degree requirements and progress."
+/>
 
       <label>Degree Program</label>
       <select

@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getCourses, getAIAdvice } from "../api";
 
+
+
 const DEGREES = [
   { value: "",          label: "Not specified" },
   { value: "CTIS_MAJOR", label: "CTIS Major" },
@@ -60,10 +62,15 @@ export default function AIAdvisorPage() {
   }
 
   return (
+
+    
+    
     <div className="page-container" style={{ maxWidth: 800 }}>
       <Link to="/" style={{ color: "#0a4a8a", textDecoration: "none", fontSize: "0.9rem" }}>
         ← Back to Home
       </Link>
+
+
 
       <h1 className="page-title" style={{ marginTop: "1rem" }}>AI Academic Advisor</h1>
       <p style={{ color: "#4a5568", marginBottom: "1.5rem" }}>

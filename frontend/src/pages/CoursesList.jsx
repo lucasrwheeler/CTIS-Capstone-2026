@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { getCourses } from "../api";
 import { Link, useLocation } from "react-router-dom";
+import PageHeader from "../components/PageHeader";
+
 
 export default function CoursesList() {
   const [courses, setCourses] = useState([]);
@@ -142,6 +144,9 @@ export default function CoursesList() {
             alignItems: "center",
           }}
         >
+
+          
+
           <h3 style={{ margin: 0 }}>
             {course.course_id} — {course.title}
           </h3>

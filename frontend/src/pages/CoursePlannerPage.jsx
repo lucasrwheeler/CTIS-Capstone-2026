@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { getCourses, getPlan } from "../api";
+import PageHeader from "../components/PageHeader";
 
 export default function CoursePlannerPage() {
   const [degree, setDegree] = useState("");
@@ -79,11 +80,18 @@ export default function CoursePlannerPage() {
 
   return (
     <div style={{ padding: "2rem", maxWidth: "900px", margin: "0 auto" }}>
-      <h1>Course Planner</h1>
+      {/* <h1>Course Planner</h1> */}
 
       <Link to="/" style={{ display: "block", marginBottom: "1rem" }}>
         ← Back to Home
       </Link>
+
+   
+<PageHeader
+  icon="🗓️"
+  title="Course Planner"
+  description="Manually Enter the courses you've completed and your designated Degree/Program to view upcoming courses you are eligible/recommended to take."
+/>
 
       {/* Degree Input */}
       <label>Degree Program</label>
