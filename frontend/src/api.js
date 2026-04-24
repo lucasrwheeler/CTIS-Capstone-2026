@@ -128,6 +128,30 @@ export async function getProfessorProfile(name) {
     try { return JSON.parse(data.body); } catch { return data; }
   }
   return data;
+  
+}
+
+// ===============================
+// User Progress (cross-device)
+// ===============================
+export async function getUserProgress(idToken) {
+  const res = await fetch(`${BASE}/user/progress`, {
+    headers: { "Authorization": idToken }
+  });
+  if (!res.ok) throw new Error("Failed to fetch progress");
+  const data = await res.json();
+  if (data.body) { try { return JSON.parse(data.body); } catch { return data; } }
+  return data;
+}
+
+export async function saveUserProgress(data, idToken) {
+  try {
+    await fetch(`${BASE}/user/progress`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": idToken },
+      body: JSON.stringify(data)
+    });
+  } catch { /* fail silently — localStorage is always the fallback */ }
 }
 
 // idToken is the Cognito ID token — required for POST
@@ -143,4 +167,6 @@ export async function updateProfessorProfile(name, profile, idToken) {
   const data = await res.json();
   if (data.body) { try { return JSON.parse(data.body); } catch { return data; } }
   return data;
+
+  
 }

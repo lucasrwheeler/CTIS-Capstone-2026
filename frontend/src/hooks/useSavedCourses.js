@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useAuth } from "../context/AuthContext";
+import { getUserProgress, saveUserProgress } from "../api";
 
 const COURSES_KEY  = "ctis_completed_courses";
 const DEGREE_KEY   = "ctis_degree_program";
@@ -15,28 +17,67 @@ function readJSON(key, fallback) {
 }
 
 export function useSavedCourses() {
-  const [completed, setCompleted]         = useState(() => readJSON(COURSES_KEY, []));
-  const [degree, setDegreeState]          = useState(() => localStorage.getItem(DEGREE_KEY) || "");
-  const [internCredits, setInternCreditsState] = useState(() => readJSON(INTERN_KEY, {}));
-  const [programs, setProgramsState]      = useState(() => readJSON(PROGRAMS_KEY, []));
+  const { currentUser, idToken } = useAuth();
 
-  useEffect(() => { localStorage.setItem(COURSES_KEY, JSON.stringify(completed)); }, [completed]);
-  useEffect(() => { localStorage.setItem(INTERN_KEY, JSON.stringify(internCredits)); }, [internCredits]);
-  useEffect(() => { localStorage.setItem(PROGRAMS_KEY, JSON.stringify(programs)); }, [programs]);
+  const [completed,     setCompleted]          = useState(() => readJSON(COURSES_KEY, []));
+  const [degree,        setDegreeState]         = useState(() => localStorage.getItem(DEGREE_KEY) || "");
+  const [internCredits, setInternCreditsState]  = useState(() => readJSON(INTERN_KEY, {}));
+  const [programs,      setProgramsState]       = useState(() => readJSON(PROGRAMS_KEY, []));
+  const [synced,        setSynced]              = useState(false);
+
+  // Keep localStorage in sync on every state change
+  useEffect(() => { localStorage.setItem(COURSES_KEY,  JSON.stringify(completed));     }, [completed]);
+  useEffect(() => { localStorage.setItem(INTERN_KEY,   JSON.stringify(internCredits)); }, [internCredits]);
+  useEffect(() => { localStorage.setItem(PROGRAMS_KEY, JSON.stringify(programs));      }, [programs]);
+
+  // On login: load from API and hydrate state (API wins over localStorage)
+  useEffect(() => {
+    if (!currentUser || !idToken || synced) return;
+    getUserProgress(idToken)
+      .then(data => {
+        if (data.courses?.length > 0) {
+          setCompleted(data.courses);
+          localStorage.setItem(COURSES_KEY, JSON.stringify(data.courses));
+        }
+        if (data.programs?.length > 0) {
+          setProgramsState(data.programs);
+          localStorage.setItem(PROGRAMS_KEY, JSON.stringify(data.programs));
+          const primary = data.programs[0] || "";
+          setDegreeState(primary);
+          localStorage.setItem(DEGREE_KEY, primary);
+        }
+        if (data.intern_credits && Object.keys(data.intern_credits).length > 0) {
+          setInternCreditsState(data.intern_credits);
+          localStorage.setItem(INTERN_KEY, JSON.stringify(data.intern_credits));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setSynced(true));
+  }, [currentUser, idToken, synced]);
+
+  // Debounce-save to API 1.5s after any state change (only after initial sync)
+  const saveTimer = useRef(null);
+  useEffect(() => {
+    if (!currentUser || !idToken || !synced) return;
+    clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      saveUserProgress(
+        { courses: completed, programs, intern_credits: internCredits },
+        idToken
+      );
+    }, 1500);
+    return () => clearTimeout(saveTimer.current);
+  }, [completed, programs, internCredits, currentUser, idToken, synced]);
 
   function setDegree(d) {
     setDegreeState(d);
     localStorage.setItem(DEGREE_KEY, d);
-    // keep programs in sync — d is always the primary
     if (d) setProgramsState(prev => [d, ...prev.filter(p => p !== d)]);
   }
 
   function toggleProgram(prog) {
     setProgramsState(prev => {
-      const next = prev.includes(prog)
-        ? prev.filter(p => p !== prog)
-        : [...prev, prog];
-      // primary degree = first program in list
+      const next = prev.includes(prog) ? prev.filter(p => p !== prog) : [...prev, prog];
       const newPrimary = next[0] || "";
       setDegreeState(newPrimary);
       localStorage.setItem(DEGREE_KEY, newPrimary);
@@ -45,12 +86,12 @@ export function useSavedCourses() {
   }
 
   function setPrograms(newPrograms) {
-  setProgramsState(newPrograms);
-  localStorage.setItem(PROGRAMS_KEY, JSON.stringify(newPrograms));
-  const newPrimary = newPrograms[0] || "";
-  setDegreeState(newPrimary);
-  localStorage.setItem(DEGREE_KEY, newPrimary);
-}
+    setProgramsState(newPrograms);
+    localStorage.setItem(PROGRAMS_KEY, JSON.stringify(newPrograms));
+    const newPrimary = newPrograms[0] || "";
+    setDegreeState(newPrimary);
+    localStorage.setItem(DEGREE_KEY, newPrimary);
+  }
 
   function toggleCourse(courseId) {
     setCompleted(prev =>
@@ -76,10 +117,10 @@ export function useSavedCourses() {
     localStorage.removeItem(INTERN_KEY);
   }
 
-return {
-  completed, degree, setDegree,
-  programs, toggleProgram, setPrograms,   // ← add setPrograms here
-  toggleCourse, setInternAmount, internCredits,
-  removeCourse, clearAll,
-};
+  return {
+    completed, degree, setDegree,
+    programs, toggleProgram, setPrograms,
+    toggleCourse, setInternAmount, internCredits,
+    removeCourse, clearAll,
+  };
 }
