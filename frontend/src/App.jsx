@@ -13,15 +13,23 @@ import LoginPage         from "./pages/LoginPage";
 import SignupPage        from "./pages/SignupPage";
 import ConfirmPage       from "./pages/ConfirmPage";
 import UserDashboard     from "./pages/UserDashboard";
+import AboutPage from "./pages/AboutPage";
+import AlumniPage from "./pages/AlumniPage";
+
+
 
 const NAV_PAGES = [
-  { to: "/professors",   label: "Professors",       icon: "👤", desc: "Browse faculty profiles, research interests, and contact information for CTIS department staff." },
+  { to: "/professors",   label: "Professors",       icon: "👩‍🏫", desc: "Browse faculty profiles, research interests, and contact information for CTIS department staff." },
   { to: "/courses",      label: "Courses",           icon: "📚", desc: "Explore the full CTIS course catalog including descriptions, credits, and prerequisites." },
   { to: "/degree-audit", label: "Degree Audit",      icon: "🎓", desc: "Check your progress toward your degree by entering the courses you've completed." },
   { to: "/eligibility",  label: "Eligibility",       icon: "✅", desc: "Find out if you meet the prerequisites for any course before you register." },
   { to: "/planner",      label: "Course Planner",    icon: "🗓️", desc: "Plan out your remaining semesters and get a suggested course sequence." },
   { to: "/distinct",     label: "Distinct Credits",  icon: "📊", desc: "Calculate how many distinct credits count toward a double major or minor combination." },
   { to: "/ai-advisor",   label: "AI Advisor",        icon: "🤖", desc: "Get personalized academic advice powered by AI — ask anything about your degree path." },
+  { to: "/alumni", icon: "🧑‍🎓", label: "Alumni" },
+  { to: "/dashboard", icon: "👤", label: "My Account" },
+  { to: "/about", label: "About", icon: "ℹ️", desc: "Learn about this portal, why it was built, and what it can do for you." },
+  
 ];
 
 function NavLink({ to, label, icon }) {
@@ -83,7 +91,7 @@ function NavBar() {
           <div style={{
             background: "#1d4ed8", borderRadius: 6,
             padding: "0.35rem 0.5rem", fontSize: "1rem", lineHeight: 1,
-          }}>🎓</div>
+          }}>🖥️</div>
           <div>
             <div style={{ fontWeight: 800, fontSize: "1rem", letterSpacing: "0.01em", lineHeight: 1.2 }}>
               Guilford CTIS Portal
@@ -208,6 +216,9 @@ export default function App() {
         <Route path="/catalog"               element={<Catalog />} />
         <Route path="/course/:id"            element={<CourseDetail />} />
         <Route path="/professor/:id"         element={<ProfessorDetail />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/alumni" element={<AlumniPage />} />
+        <Route path="/dashboard" element={<UserDashboard />} />
       </Routes>
     </AuthProvider>
   );

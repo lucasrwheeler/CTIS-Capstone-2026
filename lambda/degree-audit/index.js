@@ -3,13 +3,20 @@ const { buildAudit } = require('./auditLogic');
 const { calculateDistinctCreditsSQL } = require('./distinctSQL');
 const { askBedrock } = require('./bedrock');
 
+const HEADERS = {
+  "Content-Type": "application/json",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "*",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+};
+
+function respond(statusCode, body) {
+  return { statusCode, headers: HEADERS, body: JSON.stringify(body) };
+}
+
 exports.handler = async (event) => {
   if (event.httpMethod === "OPTIONS") {
-    return {
-      statusCode: 200,
-      headers: { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" },
-      body: ""
-    };
+    return respond(200, "");
   }
 
   const client = getClient();
@@ -24,7 +31,7 @@ exports.handler = async (event) => {
         body = typeof event.body === "string" ? JSON.parse(event.body) : event.body;
       } catch (err) {
         console.error("JSON parse error:", err);
-        return { statusCode: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify({ error: "Invalid JSON in request body." }) };
+        return respond(400, { error: "Invalid JSON in request body." });
       }
     }
 
@@ -33,10 +40,9 @@ exports.handler = async (event) => {
       const { question, degree, completed = [] } = body;
 
       if (!question) {
-        return { statusCode: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify({ error: "Question is required." }) };
+        return respond(400, { error: "Question is required." });
       }
 
-      // If degree given, fetch only its required courses; else fall back to CTIS courses
       let relevantIds = [];
       let reqContext = "";
 
@@ -68,53 +74,65 @@ exports.handler = async (event) => {
                   array_agg(DISTINCT p.prereq) FILTER (WHERE p.prereq IS NOT NULL) AS prerequisites
            FROM courses c
            LEFT JOIN prerequisites p ON c.course_id = p.course_id
-           WHERE c.course_id LIKE 'CTIS %'
+           WHERE c.course_id LIKE 'CTIS %' OR c.course_id LIKE 'CNS %'
            GROUP BY c.course_id, c.title, c.credits, c.term_offered
-           ORDER BY c.course_id`
+           ORDER BY c.course_id
+           LIMIT 40`
         );
       }
 
-      const catalogContext = coursesRes.rows.map(c =>
-        `${c.course_id}: "${c.title}" — ${c.credits} credits, offered: ${c.term_offered}` +
+      const completedSet = new Set(completed);
+      const sorted = [
+        ...coursesRes.rows.filter(c => completedSet.has(c.course_id)),
+        ...coursesRes.rows.filter(c => !completedSet.has(c.course_id)),
+      ].slice(0, 35);
+
+      const catalogContext = sorted.map(c =>
+        `${c.course_id}: "${c.title}" — ${c.credits} cr, ${c.term_offered}` +
         (c.prerequisites?.length ? `, prereqs: ${c.prerequisites.join(", ")}` : "")
       ).join("\n");
 
       const completedContext = completed.length > 0
-        ? `\nStudent's completed courses: ${completed.join(", ")}`
-        : "\nStudent has not provided completed courses.";
+        ? `Student completed: ${completed.join(", ")}`
+        : "Student has not listed completed courses.";
 
-      const prompt = `You are an academic advisor at Guilford College for the CTIS (Computer Technology and Information Systems) and CNS (Cyber and Network Security Management) department.
+      const prompt = `You are an academic advisor at Guilford College for the CTIS and CNS department. Be concise, friendly, and specific. Use course IDs when mentioning courses. If you cannot answer from the context, say so honestly.
 
-Course catalog:
-${catalogContext}
-${reqContext}
 ${completedContext}
+${reqContext}
 
-Be concise, friendly, and specific. Use course IDs when referring to courses. If you cannot answer from the context provided, say so honestly.
+Course catalog (relevant):
+${catalogContext}
 
 Student question: ${question}`;
 
-      const answer = await askBedrock(prompt, 800);
-      return { statusCode: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify({ answer }) };
+      console.log(`AI prompt length: ${prompt.length} chars`);
+
+      const answer = await askBedrock(prompt, 1500);
+      return respond(200, { answer });
     }
 
     // ─── DISTINCT CREDIT MODE ─────────────────────────────────────────────────
     if (body.programA && body.programB) {
       const result = await calculateDistinctCreditsSQL(client, body.programA, body.programB);
-      return { statusCode: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify(result) };
+      return respond(200, result);
     }
 
-    // ─── DEGREE AUDIT MODE ────────────────────────────────────────────────────
-    if (!body.degree || !body.completed) {
-      return { statusCode: 400, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify({ error: "Missing degree or completed courses." }) };
-    }
+  // ─── DEGREE AUDIT MODE ────────────────────────────────────────────────────
+if (!body.degree || !body.completed) {
+  return respond(400, { error: "Missing degree or completed courses." });
+}
 
-    const audit = await buildAudit(client, body.degree, body.completed);
-    return { statusCode: 200, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify(audit) };
+const degreeNorm =
+  body.degree === "CYBER_MAJOR" ? "CNS_MAJOR" :
+  body.degree === "CYBER_MINOR" ? "CNS_MINOR" : body.degree;
+
+const audit = await buildAudit(client, degreeNorm, body.completed);
+return respond(200, audit);
 
   } catch (err) {
     console.error("Lambda error:", err);
-    return { statusCode: 500, headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "*", "Access-Control-Allow-Methods": "GET,POST,OPTIONS" }, body: JSON.stringify({ error: err.message }) };
+    return respond(500, { error: err.message });
   } finally {
     await client.end();
   }
