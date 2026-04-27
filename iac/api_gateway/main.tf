@@ -132,16 +132,6 @@ resource "aws_api_gateway_deployment" "advising_api_deployment" {
     aws_api_gateway_integration.plan_integration
   ]
 
-
-resource "aws_api_gateway_authorizer" "cognito_auth" {
-  name            = "CognitoAuth"
-  rest_api_id     = aws_api_gateway_rest_api.advising_api.id
-  type            = "COGNITO_USER_POOLS"
-  provider_arns   = [var.cognito_user_pool_arn]
-  identity_source = "method.request.header.Authorization"
-}
-
-
   rest_api_id = aws_api_gateway_rest_api.advising_api.id
   stage_name  = "prod"
 }

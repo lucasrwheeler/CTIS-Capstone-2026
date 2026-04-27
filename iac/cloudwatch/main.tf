@@ -4,15 +4,21 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
   dashboard_body = jsonencode({
     widgets = [
       {
-        type = "text"
-        x = 0; y = 0; width = 24; height = 1
+        type   = "text"
+        x      = 0
+        y      = 0
+        width  = 24
+        height = 1
         properties = {
           markdown = "# Guilford CTIS Academic Portal — Live Dashboard"
         }
       },
       {
-        type = "metric"
-        x = 0; y = 1; width = 8; height = 6
+        type   = "metric"
+        x      = 0
+        y      = 1
+        width  = 8
+        height = 6
         properties = {
           title  = "Lambda Invocations"
           region = "us-east-1"
@@ -27,8 +33,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 8; y = 1; width = 8; height = 6
+        type   = "metric"
+        x      = 8
+        y      = 1
+        width  = 8
+        height = 6
         properties = {
           title  = "Lambda Errors"
           region = "us-east-1"
@@ -43,8 +52,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 16; y = 1; width = 8; height = 6
+        type   = "metric"
+        x      = 16
+        y      = 1
+        width  = 8
+        height = 6
         properties = {
           title  = "Lambda Duration (ms)"
           region = "us-east-1"
@@ -59,8 +71,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 0; y = 7; width = 12; height = 6
+        type   = "metric"
+        x      = 0
+        y      = 7
+        width  = 12
+        height = 6
         properties = {
           title  = "API Gateway — 4xx & 5xx Errors"
           region = "us-east-1"
@@ -73,8 +88,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 12; y = 7; width = 12; height = 6
+        type   = "metric"
+        x      = 12
+        y      = 7
+        width  = 12
+        height = 6
         properties = {
           title  = "API Gateway — Latency (ms)"
           region = "us-east-1"
@@ -87,8 +105,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 0; y = 13; width = 12; height = 6
+        type   = "metric"
+        x      = 0
+        y      = 13
+        width  = 12
+        height = 6
         properties = {
           title  = "RDS — Database Connections"
           region = "us-east-1"
@@ -100,8 +121,11 @@ resource "aws_cloudwatch_dashboard" "ctis_portal" {
         }
       },
       {
-        type = "metric"
-        x = 12; y = 13; width = 12; height = 6
+        type   = "metric"
+        x      = 12
+        y      = 13
+        width  = 12
+        height = 6
         properties = {
           title  = "RDS — CPU Utilization"
           region = "us-east-1"
