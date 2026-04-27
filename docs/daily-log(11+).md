@@ -421,3 +421,107 @@ As you outlined:
 - Color themes
 
 
+# Daily Log — Day 21 / Day 22 (Persistence, Account System, Alumni)
+Date: April 14 – April 18, 2026
+Author: Lucas Wheeler
+Focus: Building cross-page course persistence, unified account system, and alumni page.
+## 1. Built useSavedCourses Hook (localStorage Persistence)
+- Created custom React hook: useSavedCourses.js
+- Persists: completed courses, degree program, enrolled programs array, internship credits
+- All tool pages (Degree Audit, Eligibility, Course Planner, Distinct Credits) now share state
+- Courses checked on one page automatically appear pre-checked on all others
+- Uses localStorage keys: ctis_completed_courses, ctis_degree_program, ctis_programs, ctis_intern_credits
+## 2. Built Full-Featured Account Page
+- Merged UserDashboard (Cognito auth info) with new AccountPage (program + course features)
+- Identity card: shows signed-in email, role badge (Student/Alumni/Professor), Sign Out button
+- Professor view: shows View Profile and Edit Profile links for their specific profile
+- Student/Alumni view: enrolled programs selector with Save button, stats summary, course history
+- ProgramSelector component: draft state with unsaved-changes indicator before committing
+- Enrollment label logic: correctly labels Single Major, Double Major, Major/Minor, etc.
+- Course history: shows all saved courses with credits, remove buttons, and clear-all
+## 3. Built Alumni Page
+- Static alumni profiles with photos, graduation year, and career info
+- Alumni story submission form (name, year, message)
+- Consistent portal design language
+## 4. Added About Page
+- Project overview, architecture summary, and team credits
+Outcome:
+The portal now has a complete account system and all pages share persistent course state.
+# Daily Log — Day 23 / Day 24 (Auth Hardening + Cross-Device Persistence)
+Date: April 24, 2026
+Author: Lucas Wheeler
+Focus: Securing the application with proper Cognito-backed route protection and implementing 
+full cross-device data persistence via RDS.
+## 1. Implemented Protected Routes (RequireAuth)
+- Added RequireAuth component to App.jsx
+- /dashboard and /professors/:name/edit now redirect unauthenticated users to /login
+- After login, users are returned to the page they originally tried to reach (from location state)
+- Loading gate prevents unauthenticated flash on page refresh while Cognito session restores
+- Removed duplicate /dashboard route that was causing silent routing issues
+## 2. Role-Based UI Filtering
+- Professors see: Professors, Courses, Distinct Credits, Alumni, About, My Account
+- Professors do NOT see: Degree Audit, Eligibility, Course Planner, AI Advisor
+- Professors can still access student tools as guests by signing out (data won't save — intentional)
+- Students and alumni see all tools
+- My Account nav link only appears when signed in (not visible to unauthenticated visitors)
+- Home page cards also filtered by role using hideForProfessors flag per page entry
+## 3. Verified Cognito Authorizer on Professor Edit Endpoint
+- Confirmed ctis-cognito authorizer already attached to POST /professors/{name}/profile
+- Lambda validates: custom:role === "professor" AND custom:professor_name === profName
+- Frontend sends Authorization: idToken header via updateProfessorProfile in api.js
+- Double-protected: frontend canEdit check + Lambda claims check
+- Added aws_api_gateway_authorizer resource to Terraform for IaC documentation
+## 4. Implemented Cross-Device Progress Persistence (RDS-Backed)
+Problem: Course history and program selections were stored only in localStorage,
+meaning data was lost when signing in on a different browser or device.
+Solution implemented:
+- Created user_progress table in RDS PostgreSQL:
+  - email VARCHAR(255) PRIMARY KEY
+  - courses JSONB DEFAULT '[]'
+  - programs JSONB DEFAULT '[]'
+  - intern_credits JSONB DEFAULT '{}'
+  - updated_at TIMESTAMP DEFAULT NOW()
+- Added two new Lambda routes to getProfessors function:
+  - GET /user/progress — requires Cognito auth, returns saved progress by email
+  - POST /user/progress — requires Cognito auth, upserts progress row by email
+- Added API Gateway resources /user and /user/progress with:
+  - GET: Lambda proxy integration, Cognito authorizer
+  - POST: Lambda proxy integration, Cognito authorizer
+  - OPTIONS: Lambda proxy integration, no auth (CORS preflight)
+- Updated useSavedCourses hook with API sync:
+  - On login: fetches saved progress from API, hydrates state (API data wins over localStorage)
+  - On state change: debounces 1.5 seconds then saves to API automatically
+  - localStorage remains as instant local cache and guest fallback
+  - synced flag prevents premature saves before initial API load completes
+- Updated api.js with getUserProgress(idToken) and saveUserProgress(data, idToken)
+## 5. Diagnosed and Fixed Lambda Proxy Integration Issue
+- Initial /user/progress calls returned {"error":"Unsupported route","path":""}
+- Root cause: new API Gateway routes were created without Lambda Proxy Integration checked
+- Fix: enabled Lambda Proxy Integration on both GET and POST methods, redeployed API
+- Verified fix: POST now returns {"success": true}, DB row confirmed in RDS
+## 6. Verified End-to-End Cross-Device Flow
+Database confirmed after live test:
+  email: lwheeler@guilford.edu
+  courses: 15 saved (CTIS 210, 221, 243, 290, 310, 320, 321, 322, 342, 345, 370, 371, 440, 471, XD 220)
+  programs: ["CTIS_MAJOR", "CYBER_MAJOR"]
+  intern_credits: {"CTIS 290": 4}
+Cross-device test: signing in on a fresh browser (no localStorage) restores all course 
+history and program selections automatically from RDS.
+Outcome:
+The portal now provides true account-level persistence. Student and alumni progress 
+follows the user across any device or browser as long as they are signed in. 
+Unauthenticated users and professors using guest mode continue to use localStorage only.
+## Architecture at End of Day 24
+- Frontend: React + Vite (localhost dev / S3+CloudFront deployment pending)
+- Auth: Amazon Cognito (User Pool + custom:role, custom:professor_name attributes)
+- API: Amazon API Gateway (REST) → AWS Lambda (Node.js)
+- Database: Amazon RDS PostgreSQL
+- AI: Amazon Bedrock (throttled — AWS Support case pending quota increase)
+- IaC: Terraform (api_gateway, lambda, rds, vpc, cognito, iam modules)
+- Lambdas: eligibility, degree-audit, plan, getProfessors (also handles /user/progress)
+## Next Steps (Day 25)
+- S3 + CloudFront deployment (live public URL for presentation)
+- CloudWatch observability dashboard
+- Javadoc / Lambda documentation
+- Final presentation preparation
+

@@ -203,6 +203,46 @@ export default function AboutPage() {
           </div>
         </section>
 
+{/* Additional Resources */}
+<section style={{ marginBottom: "3.5rem" }}>
+  <h2 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#0a2a43", marginBottom: "1rem" }}>
+    Additional Resources
+  </h2>
+  <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+    <a
+      href="https://cnscsap--cybersecawareness-9dafb.us-east4.hosted.app/"
+      target="_blank"
+      rel="noopener noreferrer"
+      style={{ textDecoration: "none" }}
+    >
+      <div style={{
+        background: "white", border: "1px solid #e2e8f0",
+        borderRadius: 10, padding: "1.25rem 1.5rem",
+        boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+        display: "flex", alignItems: "center", gap: "1rem",
+        transition: "border-color 0.15s",
+      }}
+        onMouseEnter={e => e.currentTarget.style.borderColor = "#93c5fd"}
+        onMouseLeave={e => e.currentTarget.style.borderColor = "#e2e8f0"}
+      >
+        <div style={{ fontSize: "2rem" }}>🔐</div>
+        <div>
+          <div style={{ fontWeight: 700, color: "#0a2a43", marginBottom: "0.2rem" }}>
+            CNS Cybersecurity Awareness Portal
+          </div>
+          <div style={{ color: "#64748b", fontSize: "0.875rem", lineHeight: 1.6 }}>
+            A cybersecurity awareness resource built by fellow Guilford CNS students.
+            Learn best practices, explore security concepts, and stay informed on modern threats.
+          </div>
+          <div style={{ color: "#1d4ed8", fontSize: "0.8rem", marginTop: "0.35rem", fontWeight: 500 }}>
+            cnscsap--cybersecawareness-9dafb.us-east4.hosted.app ↗
+          </div>
+        </div>
+      </div>
+    </a>
+  </div>
+</section>
+
         {/* CTA */}
         <section style={{
           background: "linear-gradient(135deg, #0a1f35 0%, #0a3a6b 100%)",

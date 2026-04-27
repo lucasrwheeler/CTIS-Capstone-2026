@@ -100,6 +100,28 @@ module "iam" {
   source = "./iam"
 }
 
-# module "frontend" {
-#   source = "./frontend"
-# }
+# S3 + CLOUDFRONT MODULE
+module "frontend" {
+  source      = "./s3_cloudfront"
+  bucket_name = "guilford-ctis-portal-frontend"
+}
+
+# CLOUDWATCH DASHBOARD
+module "cloudwatch" {
+  source = "./cloudwatch"
+}
+
+output "frontend_url" {
+  value       = module.frontend.cloudfront_url
+  description = "Live URL of the deployed portal"
+}
+
+output "s3_bucket" {
+  value       = module.frontend.s3_bucket_name
+  description = "S3 bucket to sync frontend build into"
+}
+
+output "cloudfront_distribution_id" {
+  value       = module.frontend.cloudfront_distribution_id
+  description = "CloudFront distribution ID for cache invalidation"
+}
