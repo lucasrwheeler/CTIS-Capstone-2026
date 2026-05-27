@@ -1,34 +1,93 @@
-const { getRequirementsForDegree } = require('./degreeSQL');
-const { checkEligibilitySQL } = require('./eligibilitySQL');
-const { PROGRAM_RULES } = require('./PROGRAM_RULES');
+/**
+ * @file auditLogic.js
+ * @description Core degree audit computation engine.
+ *
+ * Orchestrates the full degree audit pipeline:
+ *   1. Loads degree requirements from RDS via degreeSQL
+ *   2. Applies PROGRAM_RULES business logic (elective counts, internship, capstone)
+ *   3. Computes completion status for core, elective, and internship categories
+ *   4. Enforces special rules (e.g. CTIS Minor 300-level elective requirement)
+ *   5. Calculates overall progress percentage
+ *   6. Builds a recommended course order (core → internship → electives → capstone)
+ *   7. Runs eligibility checks on all remaining courses to identify what's takeable now
+ *
+ * This module contains the highest-level business logic in the backend.
+ * All database access is delegated to degreeSQL and eligibilitySQL.
+ *
+ * @module auditLogic
+ * @requires ./degreeSQL     - RDS query for requirements
+ * @requires ./eligibilitySQL - Prerequisite evaluation
+ * @requires ./PROGRAM_RULES  - Static program configuration
+ */
 
+const { getRequirementsForDegree } = require('./degreeSQL');
+const { checkEligibilitySQL }       = require('./eligibilitySQL');
+const { PROGRAM_RULES }             = require('./PROGRAM_RULES');
+
+/**
+ * Performs a complete degree audit for a student.
+ *
+ * Compares the student's completed courses against all requirements for
+ * the specified degree program and returns a structured audit report.
+ *
+ * @async
+ * @param {import('pg').Client} client    - Active, connected PostgreSQL client
+ * @param {string}              degree    - Program code (must be a key in PROGRAM_RULES)
+ * @param {string[]}            completed - Array of completed course IDs
+ * @returns {Promise<{
+ *   degree:                        string,
+ *   completed_core:                string[],
+ *   remaining_core:                string[],
+ *   internship_satisfied:          boolean,
+ *   elective_satisfied:            boolean,
+ *   completed_electives:           string[],
+ *   remaining_requirements:        {
+ *     core:                        string[],
+ *     internship:                  string[],
+ *     elective_options:            string[],
+ *     elective_slots_remaining:    number,
+ *     requires_300_level:          boolean,
+ *     has_300_level:               boolean
+ *   },
+ *   courses_completed_toward_degree: number,
+ *   total_courses_required:        number,
+ *   progress_percent:              number,
+ *   eligible_next:                 string[],
+ *   recommended_order:             string[],
+ *   notes:                         string
+ * }>}
+ * @throws {Error} If the degree code is not found in PROGRAM_RULES
+ */
 async function buildAudit(client, degree, completed) {
   const completedSet = new Set(completed);
-  const rules = PROGRAM_RULES[degree];
+  const rules        = PROGRAM_RULES[degree];
 
   if (!rules) {
     throw new Error(`Unknown degree: ${degree}`);
   }
 
-  // 1. Load requirements from DB
+  // ── Step 1: Load requirements from RDS ──────────────────────────────────────
+  // Returns { Core: [...], Elective: [...], Internship: [...] }
   const requirements = await getRequirementsForDegree(client, degree);
 
-  const core = requirements.Core || [];
-  const electives = requirements.Elective || [];
+  const core        = requirements.Core       || [];
+  const electives   = requirements.Elective   || [];
   const internships = requirements.Internship || [];
 
-  // 2. Completed vs remaining
-  const completedCore = core.filter(c => completedSet.has(c));
-  const remainingCore = core.filter(c => !completedSet.has(c));
+  // ── Step 2: Completed vs remaining for each category ────────────────────────
+  const completedCore      = core.filter(c =>  completedSet.has(c));
+  const remainingCore      = core.filter(c => !completedSet.has(c));
 
   const completedElectives = electives.filter(c => completedSet.has(c));
-  const electiveCount = completedElectives.length;
-  const electiveSatisfied = electiveCount >= rules.electives_required;
+  const electiveCount      = completedElectives.length;
+  const electiveSatisfied  = electiveCount >= rules.electives_required;
 
+  // If elective requirement is already met, no options remain to show
   const remainingElectiveOptions = electiveSatisfied ? [] : electives;
-  const remainingElectiveSlots = Math.max(0, rules.electives_required - electiveCount);
+  const remainingElectiveSlots   = Math.max(0, rules.electives_required - electiveCount);
 
-  // 3. Internship logic
+  // ── Step 3: Internship logic ─────────────────────────────────────────────────
+  // Satisfied if any internship course (CTIS 290 or CTIS 390) was completed
   let internshipSatisfied = true;
   let remainingInternship = [];
 
@@ -37,7 +96,8 @@ async function buildAudit(client, degree, completed) {
     remainingInternship = internshipSatisfied ? [] : internships;
   }
 
-  // 4. Special rule: CTIS Minor 300-level requirement
+  // ── Step 4: CTIS Minor 300-level special rule ────────────────────────────────
+  // CTIS Minor requires at least one 300-level elective (course ID starts with "CTIS 3")
   let has300Level = true;
   if (rules.require_300_level) {
     has300Level = completedElectives.some(c => c.startsWith("CTIS 3"));
@@ -45,70 +105,63 @@ async function buildAudit(client, degree, completed) {
 
   const electiveRuleOK = electiveSatisfied && has300Level;
 
-  // 5. Count courses toward total
- const internshipCount =
-  rules.internship_required && internshipSatisfied ? 1 : 0;
+  // ── Step 5: Progress calculation ────────────────────────────────────────────
+  const internshipCount = rules.internship_required && internshipSatisfied ? 1 : 0;
 
-const completedCount =
-  completedCore.length +
-  internshipCount +
-  Math.min(electiveCount, rules.electives_required);
+  const completedCount =
+    completedCore.length +
+    internshipCount +
+    Math.min(electiveCount, rules.electives_required);
 
+  // Capped at 1.0 (100%) — prevents display overflow if extra courses taken
   const progress = Math.min(completedCount / rules.total_courses_required, 1.0);
 
-  // 6. Recommended order
+  // ── Step 6: Recommended course order ────────────────────────────────────────
+  // Order: core (excluding capstone) → internship → electives → capstone last
   const recommended = [];
 
-  // All remaining core except capstone
   for (const course of remainingCore) {
-    if (course !== rules.capstone) {
-      recommended.push(course);
-    }
+    if (course !== rules.capstone) recommended.push(course);
   }
 
-  // Internship
-  if (!internshipSatisfied) {
-    recommended.push(...internships);
-  }
+  if (!internshipSatisfied)    recommended.push(...internships);
+  if (!electiveRuleOK)         recommended.push(...electives);
 
-  // Electives
-  if (!electiveRuleOK) {
-    recommended.push(...electives);
-  }
-
-  // Capstone last
+  // Capstone always goes last — must be taken after all other requirements
   if (remainingCore.includes(rules.capstone)) {
     recommended.push(rules.capstone);
   }
 
-  // 7. Eligibility for remaining courses
+  // ── Step 7: Eligibility check on all remaining courses ───────────────────────
+  // Runs checkEligibilitySQL on every remaining required course to surface
+  // what the student can actually register for right now
   const eligibleNext = [];
   for (const course of [...remainingCore, ...remainingElectiveOptions]) {
     const result = await checkEligibilitySQL(client, course, completed);
     if (result.eligible) eligibleNext.push(course);
   }
 
-  // 8. Final structured audit object
+  // ── Step 8: Return structured audit report ───────────────────────────────────
   return {
     degree,
-    completed_core: completedCore,
-    remaining_core: remainingCore,
-    internship_satisfied: internshipSatisfied,
-    elective_satisfied: electiveRuleOK,
-    completed_electives: completedElectives,
+    completed_core:                  completedCore,
+    remaining_core:                  remainingCore,
+    internship_satisfied:            internshipSatisfied,
+    elective_satisfied:              electiveRuleOK,
+    completed_electives:             completedElectives,
     remaining_requirements: {
-      core: remainingCore,
-      internship: remainingInternship,
-      elective_options: remainingElectiveOptions,
-      elective_slots_remaining: remainingElectiveSlots,
-      requires_300_level: !!rules.require_300_level,
-      has_300_level: has300Level
+      core:                          remainingCore,
+      internship:                    remainingInternship,
+      elective_options:              remainingElectiveOptions,
+      elective_slots_remaining:      remainingElectiveSlots,
+      requires_300_level:            !!rules.require_300_level,
+      has_300_level:                 has300Level
     },
     courses_completed_toward_degree: completedCount,
-    total_courses_required: rules.total_courses_required,
-    progress_percent: progress,
-    eligible_next: eligibleNext,
-    recommended_order: recommended,
+    total_courses_required:          rules.total_courses_required,
+    progress_percent:                progress,
+    eligible_next:                   eligibleNext,
+    recommended_order:               recommended,
     notes: `You have completed ${completedCount} of ${rules.total_courses_required} required courses for the ${degree.replace('_', ' ')}.`
   };
 }
